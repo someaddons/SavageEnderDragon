@@ -85,8 +85,13 @@ public class DragonFightManagerCustom
         areaeffectcloudentity.addEffect(new EffectInstance(Effects.BLINDNESS, 100, 1));
         enderCrystalEntity.level.addFreshEntity(areaeffectcloudentity);
 
+        if (!(damageSource.getEntity() instanceof PlayerEntity))
+        {
+            return;
+        }
+
         // On ranged crystal kill
-        if (damageSource.getEntity() instanceof PlayerEntity && damageSource.getEntity().blockPosition().distSqr(enderCrystalEntity.blockPosition()) > LIGHTNING_DESTROY_RANGE)
+        if (damageSource.getEntity().blockPosition().distSqr(enderCrystalEntity.blockPosition()) > LIGHTNING_DESTROY_RANGE)
         {
             // Hit player destroying the crystals from range with lightning
             LightningBoltEntity lightningboltentity = EntityType.LIGHTNING_BOLT.create(enderCrystalEntity.level);
