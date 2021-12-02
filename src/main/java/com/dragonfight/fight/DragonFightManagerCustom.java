@@ -1,6 +1,7 @@
 package com.dragonfight.fight;
 
 import com.dragonfight.DragonfightMod;
+import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.TextComponent;
@@ -17,10 +18,8 @@ import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.enderdragon.phases.DragonDeathPhase;
 import net.minecraft.world.entity.boss.enderdragon.phases.DragonPhaseInstance;
 import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
-import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.monster.Phantom;
 import net.minecraft.world.entity.npc.Npc;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Explosion;
@@ -38,6 +37,10 @@ import static net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE;
  */
 public class DragonFightManagerCustom
 {
+    public static ImmutableList<EntityType> spawnOnCrystalDeath   = ImmutableList.of();
+    public static ImmutableList<EntityType> spawnOnCrystalRespawn = ImmutableList.of();
+    public static ImmutableList<EntityType> spawnOnDragonSitting  = ImmutableList.of();
+
     private static final int      CRYSTAL_RESPAWN_TIME    = 7000;
     private static final int      LIGHTNING_DESTROY_RANGE = 10 * 10;
     private static final int      ADD_TIMER               = 1600;
@@ -103,10 +106,13 @@ public class DragonFightManagerCustom
             // Spawn phantoms aggrod to the player
             for (int i = 0; i < Math.min(1, getDifficulty() / 4); i++)
             {
-                final Phantom phantomEntity = EntityType.PHANTOM.create(enderCrystalEntity.level);
-                phantomEntity.setTarget((LivingEntity) damageSource.getEntity());
-                phantomEntity.moveTo(damageSource.getEntity().getX(), damageSource.getEntity().getY() + 5, damageSource.getEntity().getZ());
-                enderCrystalEntity.level.addFreshEntity(phantomEntity);
+                final LivingEntity entity = (LivingEntity) spawnOnCrystalDeath.get(DragonfightMod.rand.nextInt(spawnOnCrystalDeath.size())).create(enderCrystalEntity.level);
+                if (entity instanceof Mob)
+                {
+                    ((Mob) entity).setTarget((LivingEntity) damageSource.getEntity());
+                }
+                entity.moveTo(damageSource.getEntity().getX(), damageSource.getEntity().getY() + 5, damageSource.getEntity().getZ());
+                enderCrystalEntity.level.addFreshEntity(entity);
             }
         }
         else
@@ -331,23 +337,29 @@ public class DragonFightManagerCustom
             return;
         }
 
-        final EnderMan endermanEntity = EntityType.ENDERMAN.create(world);
-        endermanEntity.moveTo(spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
-        world.addFreshEntity(endermanEntity);
+        final LivingEntity entity = (LivingEntity) spawnOnDragonSitting.get(DragonfightMod.rand.nextInt(spawnOnDragonSitting.size())).create(world);
+        entity.moveTo(spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
+        world.addFreshEntity(entity);
 
-        final List<Player> closesPlayers = world.getNearbyPlayers(TargetingConditions.DEFAULT, endermanEntity, endermanEntity.getBoundingBox().inflate(20));
+        final List<Player> closesPlayers = world.getNearbyPlayers(TargetingConditions.DEFAULT, entity, entity.getBoundingBox().inflate(20));
         if (!closesPlayers.isEmpty())
         {
             final Player closestPlayer = closesPlayers.get(DragonfightMod.rand.nextInt(closesPlayers.size()));
-            endermanEntity.setTarget(closestPlayer);
+            if (entity instanceof Mob)
+            {
+                ((Mob) entity).setTarget(closestPlayer);
+            }
         }
         else
         {
-            final List<Player> farPlayers = world.getNearbyPlayers(TargetingConditions.DEFAULT, endermanEntity, endermanEntity.getBoundingBox().inflate(60, 120, 60));
+            final List<Player> farPlayers = world.getNearbyPlayers(TargetingConditions.DEFAULT, entity, entity.getBoundingBox().inflate(60, 120, 60));
             if (!farPlayers.isEmpty())
             {
                 final Player closestPlayer = farPlayers.get(DragonfightMod.rand.nextInt(farPlayers.size()));
-                endermanEntity.setTarget(closestPlayer);
+                if (entity instanceof Mob)
+                {
+                    ((Mob) entity).setTarget(closestPlayer);
+                }
             }
         }
     }
@@ -370,11 +382,14 @@ public class DragonFightManagerCustom
             for (int i = 0; i < getDifficulty() / 2; i++)
             {
                 // Spawn blaze on respawn
-                final Blaze blaze = EntityType.BLAZE.create(world);
-                blaze.setPos(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
-                world.addFreshEntity(blaze);
+                final LivingEntity entity = (LivingEntity) spawnOnCrystalRespawn.get(DragonfightMod.rand.nextInt(spawnOnCrystalRespawn.size())).create(world);
+                entity.setPos(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+                world.addFreshEntity(entity);
 
-                blaze.setTarget(world.getNearestPlayer(blaze, 100));
+                if (entity instanceof Mob)
+                {
+                    ((Mob) entity).setTarget(world.getNearestPlayer(entity, 100));
+                }
             }
 
             float f = (DragonfightMod.rand.nextFloat() - 0.5F) * 8.0F;
