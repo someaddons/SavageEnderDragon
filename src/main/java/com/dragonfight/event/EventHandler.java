@@ -2,11 +2,11 @@ package com.dragonfight.event;
 
 import com.dragonfight.DragonfightMod;
 import com.dragonfight.fight.DragonFightManagerCustom;
-import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
@@ -21,7 +21,7 @@ public class EventHandler
     @SubscribeEvent
     public static void onWorldTick(final TickEvent.WorldTickEvent event)
     {
-        if (!event.world.isClientSide && event.world.dimension() == World.END)
+        if (!event.world.isClientSide && event.world.dimension() == Level.END)
         {
             DragonFightManagerCustom.onWorldTick(event.world);
         }
@@ -30,12 +30,12 @@ public class EventHandler
     @SubscribeEvent
     public static void onEnterWorld(final EntityJoinWorldEvent event)
     {
-        if (event.getEntity() instanceof EnderDragonEntity)
+        if (event.getEntity() instanceof EnderDragon)
         {
-            final float pct = ((EnderDragonEntity) event.getEntity()).getHealth() / ((EnderDragonEntity) event.getEntity()).getMaxHealth();
-            ((EnderDragonEntity) event.getEntity()).getAttribute(Attributes.MAX_HEALTH)
-              .setBaseValue(Math.max(400 + 50 * DragonfightMod.config.getCommonConfig().dragonDifficulty.get(), ((EnderDragonEntity) event.getEntity()).getMaxHealth()));
-            ((EnderDragonEntity) event.getEntity()).setHealth(((EnderDragonEntity) event.getEntity()).getMaxHealth() * pct);
+            final float pct = ((EnderDragon) event.getEntity()).getHealth() / ((EnderDragon) event.getEntity()).getMaxHealth();
+            ((EnderDragon) event.getEntity()).getAttribute(Attributes.MAX_HEALTH)
+              .setBaseValue(Math.max(400 + 50 * DragonfightMod.config.getCommonConfig().dragonDifficulty.get(), ((EnderDragon) event.getEntity()).getMaxHealth()));
+            ((EnderDragon) event.getEntity()).setHealth(((EnderDragon) event.getEntity()).getMaxHealth() * pct);
         }
     }
 
@@ -45,7 +45,7 @@ public class EventHandler
         /**
          * Disable entity spawn for the dragon fight
          */
-        if (event.getWorld() instanceof ServerWorld && ((ServerWorld) event.getWorld()).dimension() == World.END)
+        if (event.getWorld() instanceof ServerLevel && ((ServerLevel) event.getWorld()).dimension() == Level.END)
         {
             if (BlockPos.ZERO.distSqr(event.getX(), 64.0d, event.getZ(), false) < 300 * 300)
             {

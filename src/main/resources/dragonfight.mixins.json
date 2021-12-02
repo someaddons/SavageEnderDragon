@@ -1,14 +1,14 @@
 {
   "required": false,
   "package": "com.dragonfight.mixin",
-  "compatibilityLevel": "JAVA_8",
+  "compatibilityLevel": "JAVA_16",
   "refmap": "dragonfight.refmap.json",
   "mixins": [
     "dragon.CrystalRespawnMixin",
+    "dragon.DragonFireballEntityMixin",
     "dragon.EnderDragonEntityMixin",
-    "dragon.PhaseManagerMixin",
     "dragon.LightningBoldSoundMixin",
-    "dragon.DragonFireballEntityMixin"
+    "dragon.PhaseManagerMixin"
   ],
   "client": [
   ],
