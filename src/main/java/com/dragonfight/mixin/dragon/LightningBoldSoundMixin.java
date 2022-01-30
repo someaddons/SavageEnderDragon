@@ -9,8 +9,14 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 public class LightningBoldSoundMixin
 {
     @ModifyConstant(method = "tick", constant = @Constant(floatValue = 10000.0F))
-    private float onAttackPlayers(float damage)
+    private float silentLightningB(float damage)
     {
-        return 1000.0F;
+        return 1000F;
+    }
+
+    @ModifyConstant(method = "tick", constant = @Constant(floatValue = 2.0F))
+    private float silentLightning(float damage)
+    {
+        return 0.5F;
     }
 }

@@ -27,6 +27,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
 import net.minecraft.world.level.levelgen.feature.SpikeFeature;
 import net.minecraft.world.phys.AABB;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 import java.util.*;
 
@@ -85,7 +86,7 @@ public class DragonFightManagerCustom
         areaeffectcloudentity.setRadius(3.0F);
         areaeffectcloudentity.setDuration(CRYSTAL_RESPAWN_TIME - 200 * getDifficulty());
         areaeffectcloudentity.setRadiusPerTick((5.0F - areaeffectcloudentity.getRadius()) / (float) areaeffectcloudentity.getDuration());
-        areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.HARM, 100, Math.min(2, getDifficulty() / 4)));
+        areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.HARM, 100, Math.max(2, getDifficulty() / 4)));
         areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 100, 1));
         enderCrystalEntity.level.addFreshEntity(areaeffectcloudentity);
 
@@ -104,7 +105,7 @@ public class DragonFightManagerCustom
             enderCrystalEntity.level.addFreshEntity(lightningboltentity);
 
             // Spawn phantoms aggrod to the player
-            for (int i = 0; i < Math.min(1, getDifficulty() / 4); i++)
+            for (int i = 0; i < Math.max(1, getDifficulty() / 4); i++)
             {
                 final LivingEntity entity = (LivingEntity) spawnOnCrystalDeath.get(DragonfightMod.rand.nextInt(spawnOnCrystalDeath.size())).create(enderCrystalEntity.level);
                 if (entity instanceof Mob)
@@ -135,7 +136,7 @@ public class DragonFightManagerCustom
         }
     }
 
-    private static Map<UUID, Integer> flyingPlayers = new HashMap<>();
+    public static Map<UUID, Integer> flyingPlayers = new HashMap<>();
 
     public static void onWorldTick(final Level world)
     {
@@ -144,6 +145,23 @@ public class DragonFightManagerCustom
         {
             reset();
             return;
+        }
+
+        if (crystalRespawnPos != null)
+        {
+            if (--crystalRespawnTimer > 0)
+            {
+                if (crystalRespawnTimer == 200)
+                {
+                    // Spawns pre-respawn lightning
+                    spawnLightningAtCircle(crystalRespawnPos, 4, world);
+                }
+            }
+            else
+            {
+                notifyPlayer(world, "Respawning crystal at" + crystalRespawnPos);
+                respawnCrystalAt(crystalRespawnPos, world);
+            }
         }
 
         if (dragonEntity.getHealth() < dragonEntity.getMaxHealth() && dragonEntity.isAlive())
@@ -196,23 +214,6 @@ public class DragonFightManagerCustom
             notifyPlayer(world, "Forcing landing phase");
         }
 
-        if (crystalRespawnPos != null)
-        {
-            if (--crystalRespawnTimer > 0)
-            {
-                if (crystalRespawnTimer == 200)
-                {
-                    // Spawns pre-respawn lightning
-                    spawnLightningAtCircle(crystalRespawnPos, 4, world);
-                }
-            }
-            else
-            {
-                notifyPlayer(world, "Respawning crystal at" + crystalRespawnPos);
-                respawnCrystalAt(crystalRespawnPos, world);
-            }
-        }
-
 
         if (dragonEntity.getHealth() > dragonEntity.getMaxHealth() * 0.9)
         {
@@ -227,13 +228,13 @@ public class DragonFightManagerCustom
             {
                 if (time == 300)
                 {
-                    // Kill player
                     player.getAttribute(net.minecraftforge.common.ForgeMod.ENTITY_GRAVITY.get()).addTransientModifier(AA_GRAVITY_MOD);
                     flyingPlayers.put(player.getUUID(), ++time);
                 }
                 else if (time > 400)
                 {
                     player.hurt(DamageSource.FALL, player.getMaxHealth() * 0.9f);
+                    player.setHealth(1);
                     player.getAttribute(net.minecraftforge.common.ForgeMod.ENTITY_GRAVITY.get()).removeModifier(AA_GRAVITY_MOD);
                     flyingPlayers.put(player.getUUID(), 0);
                 }
@@ -253,6 +254,7 @@ public class DragonFightManagerCustom
                 if (time > 300)
                 {
                     player.hurt(DamageSource.FALL, player.getMaxHealth() * 0.9f);
+                    player.setHealth(1);
                     player.getAttribute(net.minecraftforge.common.ForgeMod.ENTITY_GRAVITY.get()).removeModifier(AA_GRAVITY_MOD);
                 }
                 flyingPlayers.put(player.getUUID(), 0);
@@ -320,6 +322,16 @@ public class DragonFightManagerCustom
         {
             endermanEntity.remove(Entity.RemovalReason.DISCARDED);
         }
+
+        for (final UUID playerUUID : flyingPlayers.keySet())
+        {
+            final Player player = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayer(playerUUID);
+            if (player != null)
+            {
+                player.getAttribute(net.minecraftforge.common.ForgeMod.ENTITY_GRAVITY.get()).removeModifier(AA_GRAVITY_MOD);
+            }
+        }
+        flyingPlayers.clear();
         meleeAdds.clear();
     }
 
@@ -399,6 +411,7 @@ public class DragonFightManagerCustom
         }
 
         crystalRespawnPos = null;
+        checkCrystalsToRespawn(world);
     }
 
     /**

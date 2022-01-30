@@ -11,6 +11,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 /**
@@ -51,6 +52,16 @@ public class EventHandler
             {
                 event.setResult(Event.Result.DENY);
             }
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onPlayerTick(final TickEvent.PlayerTickEvent playerTickEvent)
+    {
+        final Integer flyTime = DragonFightManagerCustom.flyingPlayers.get(playerTickEvent.player.getUUID());
+        if (flyTime != null)
+        {
+            playerTickEvent.player.getAbilities().flying = false;
         }
     }
 }
