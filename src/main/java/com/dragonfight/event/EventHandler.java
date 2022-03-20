@@ -46,7 +46,7 @@ public class EventHandler
         /**
          * Disable entity spawn for the dragon fight
          */
-        if (event.getWorld() instanceof ServerLevel && ((ServerLevel) event.getWorld()).dimension() == Level.END)
+        if (event.getWorld() instanceof ServerLevel && ((ServerLevel) event.getWorld()).dimension() == Level.END && DragonFightManagerCustom.isFightRunning)
         {
             if (BlockPos.ZERO.distSqr(event.getX(), 64.0d, event.getZ(), false) < 300 * 300)
             {
@@ -59,7 +59,7 @@ public class EventHandler
     public static void onPlayerTick(final TickEvent.PlayerTickEvent playerTickEvent)
     {
         final Integer flyTime = DragonFightManagerCustom.flyingPlayers.get(playerTickEvent.player.getUUID());
-        if (flyTime != null)
+        if (flyTime != null && !playerTickEvent.player.isCreative())
         {
             playerTickEvent.player.getAbilities().flying = false;
         }

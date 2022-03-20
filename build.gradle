@@ -96,8 +96,6 @@ dependencies {
 
     annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
 
-    implementation fg.deobf("curse.maven:ever-248353:3593765")
-    implementation fg.deobf("curse.maven:cy-232758:3614854")
 }
 
 jar {

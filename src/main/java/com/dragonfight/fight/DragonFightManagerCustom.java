@@ -66,7 +66,7 @@ public class DragonFightManagerCustom
 
     private static EnderDragon dragonEntity = null;
 
-    private static boolean isFightRunning = true;
+    public static boolean isFightRunning = true;
 
     public static AttributeModifier AA_GRAVITY_MOD = new AttributeModifier("fall", 5.0, AttributeModifier.Operation.ADDITION);
 
@@ -83,11 +83,12 @@ public class DragonFightManagerCustom
         notifyPlayer(enderCrystalEntity.level, "Crystal died from:" + damageSource);
         // Spawn ground area effect making the player walk away
         areaeffectcloudentity.setParticle(ParticleTypes.DRAGON_BREATH);
-        areaeffectcloudentity.setRadius(3.0F);
-        areaeffectcloudentity.setDuration(CRYSTAL_RESPAWN_TIME - 200 * getDifficulty());
+        areaeffectcloudentity.setRadius(1.0F);
+        areaeffectcloudentity.setDuration(CRYSTAL_RESPAWN_TIME / getDifficulty());
         areaeffectcloudentity.setRadiusPerTick((5.0F - areaeffectcloudentity.getRadius()) / (float) areaeffectcloudentity.getDuration());
-        areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.HARM, 100, Math.max(2, getDifficulty() / 4)));
+        areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.HARM, 100, 1));
         areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 100, 1));
+        areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
         enderCrystalEntity.level.addFreshEntity(areaeffectcloudentity);
 
         if (!(damageSource.getEntity() instanceof Player))
@@ -291,7 +292,7 @@ public class DragonFightManagerCustom
             }
         }
 
-        if (spawnAdds && spawnCounter++ > (ADD_TIMER - Math.max(400, getDifficulty() * 50)))
+        if (spawnAdds && spawnCounter++ > (ADD_TIMER / getDifficulty()))
         {
             notifyPlayer(world, "Spawning melee add");
             spawnMeleeAdds(world);
@@ -525,7 +526,7 @@ public class DragonFightManagerCustom
             if (world.getEntitiesOfClass(EndCrystal.class, spike.getTopBoundingBox()).isEmpty())
             {
                 crystalRespawnPos = pos;
-                crystalRespawnTimer = Math.max(200, CRYSTAL_RESPAWN_TIME - 400 * getDifficulty());
+                crystalRespawnTimer = Math.max(200, CRYSTAL_RESPAWN_TIME / getDifficulty());
                 notifyPlayer(world, "Adding respawn at :" + crystalRespawnPos + " in:" + crystalRespawnTimer);
                 break;
             }
@@ -652,6 +653,6 @@ public class DragonFightManagerCustom
             }
         }
 
-        return difficulty;
+        return Math.max(difficulty, 1);
     }
 }
