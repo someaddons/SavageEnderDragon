@@ -1,0 +1,22 @@
+{
+  "required": false,
+  "package": "com.dragonfight.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "dragonfight.refmap.json",
+  "mixins": [
+    "dragon.CrystalRespawnMixin",
+    "dragon.DragonFireballEntityMixin",
+    "dragon.EndDragonFightMixin",
+    "dragon.EnderDragonEntityMixin",
+    "dragon.LightningBoldSoundMixin",
+    "dragon.NaturalSpawnerMixin",
+    "dragon.PhaseManagerMixin",
+    "dragon.PlayerTickMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "minVersion": "0.8"
+}
