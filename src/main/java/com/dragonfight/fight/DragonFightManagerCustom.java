@@ -25,6 +25,7 @@ import net.minecraft.world.entity.npc.Npc;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
 import net.minecraft.world.level.levelgen.feature.SpikeFeature;
 import net.minecraft.world.phys.AABB;
@@ -48,7 +49,8 @@ public class DragonFightManagerCustom
     private static       BlockPos crystalRespawnPos       = null;
     private static       int      crystalRespawnTimer     = 0;
 
-    private static int timeSinceLastLanding = 0;
+    private static AttributeModifier healthMod            = new AttributeModifier("savagedragonhealth", 200, AttributeModifier.Operation.ADDITION);
+    private static int               timeSinceLastLanding = 0;
 
     /**
      * ^^ Add counters
@@ -180,9 +182,16 @@ public class DragonFightManagerCustom
                 }
 
                 isFightRunning = true;
+                if (dragonEntity.getAttribute(Attributes.MAX_HEALTH).hasModifier(healthMod))
+                {
+                    dragonEntity.getAttribute(Attributes.MAX_HEALTH).removeModifier(healthMod);
+                }
+
                 final float pct = dragonEntity.getHealth() / (dragonEntity.getMaxHealth());
-                dragonEntity.getAttribute(Attributes.MAX_HEALTH)
-                  .setBaseValue(Math.max(400 + 50 * DragonfightMod.config.getCommonConfig().dragonDifficulty, dragonEntity.getMaxHealth()));
+
+                healthMod = new AttributeModifier("savagehealth", 200 + 50 * DragonfightMod.config.getCommonConfig().dragonDifficulty, AttributeModifier.Operation.ADDITION);
+                dragonEntity.getAttribute(Attributes.MAX_HEALTH).addTransientModifier(healthMod);
+
                 dragonEntity.setHealth(dragonEntity.getMaxHealth() * pct);
             }
         }
@@ -325,6 +334,7 @@ public class DragonFightManagerCustom
             endermanEntity.remove(Entity.RemovalReason.DISCARDED);
         }
 
+        isFightRunning = false;
         flyingPlayers.clear();
         meleeAdds.clear();
     }
@@ -339,6 +349,11 @@ public class DragonFightManagerCustom
         meleeAdds.removeIf(endermanEntity -> endermanEntity.isRemoved());
 
         if (meleeAdds.size() >= getDifficulty())
+        {
+            return;
+        }
+
+        if (spawnOnDragonSitting.isEmpty())
         {
             return;
         }
@@ -385,7 +400,7 @@ public class DragonFightManagerCustom
             crystal.setPos(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
             world.addFreshEntity(crystal);
 
-            for (int i = 0; i < getDifficulty() / 2; i++)
+            for (int i = 0; i < getDifficulty() / 2 && !spawnOnCrystalRespawn.isEmpty(); i++)
             {
                 // Spawn blaze on respawn
                 final LivingEntity entity = (LivingEntity) spawnOnCrystalRespawn.get(DragonfightMod.rand.nextInt(spawnOnCrystalRespawn.size())).create(world);
@@ -514,9 +529,22 @@ public class DragonFightManagerCustom
         Collections.shuffle(spikes, DragonfightMod.rand);
         for (SpikeFeature.EndSpike spike : spikes)
         {
-            final BlockPos pos = new BlockPos(spike.getCenterX(), spike.getHeight(), spike.getCenterZ());
+            BlockPos pos = new BlockPos(spike.getCenterX(), spike.getHeight(), spike.getCenterZ());
 
-            if (world.getEntitiesOfClass(EndCrystal.class, spike.getTopBoundingBox()).isEmpty())
+            int addHeight = 0;
+
+            for (int i = 0; i < 100; i++)
+            {
+                if (world.getBlockState(pos.offset(0, i, 0)).isAir() && world.getBlockState(pos.offset(0, i - 1, 0)).getBlock() == Blocks.BEDROCK)
+                {
+                    break;
+                }
+                addHeight++;
+            }
+
+            pos = pos.offset(0, addHeight, 0);
+
+            if (world.getEntitiesOfClass(EndCrystal.class, spike.getTopBoundingBox().move(0, addHeight, 0)).isEmpty())
             {
                 crystalRespawnPos = pos;
                 crystalRespawnTimer = Math.max(200, CRYSTAL_RESPAWN_TIME / getDifficulty());
@@ -587,7 +615,7 @@ public class DragonFightManagerCustom
               lightningPos.getX(),
               lightningPos.getY(),
               lightningPos.getZ(),
-              1 + getDifficulty() / 4,
+              1 + getDifficulty() / 4f,
               false,
               Explosion.BlockInteraction.NONE);
         }
