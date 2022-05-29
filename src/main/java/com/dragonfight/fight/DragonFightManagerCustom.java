@@ -25,7 +25,6 @@ import net.minecraft.world.entity.npc.Npc;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
 import net.minecraft.world.level.levelgen.feature.SpikeFeature;
 import net.minecraft.world.phys.AABB;
@@ -157,7 +156,7 @@ public class DragonFightManagerCustom
                 if (crystalRespawnTimer == 200)
                 {
                     // Spawns pre-respawn lightning
-                    spawnLightningAtCircle(crystalRespawnPos, 4, world);
+                    spawnLightningAtCircle(crystalRespawnPos, 8, world);
                 }
             }
             else
@@ -182,12 +181,12 @@ public class DragonFightManagerCustom
                 }
 
                 isFightRunning = true;
+                final float pct = dragonEntity.getHealth() / (dragonEntity.getMaxHealth());
+
                 if (dragonEntity.getAttribute(Attributes.MAX_HEALTH).hasModifier(healthMod))
                 {
                     dragonEntity.getAttribute(Attributes.MAX_HEALTH).removeModifier(healthMod);
                 }
-
-                final float pct = dragonEntity.getHealth() / (dragonEntity.getMaxHealth());
 
                 healthMod = new AttributeModifier("savagehealth", 200 + 50 * DragonfightMod.config.getCommonConfig().dragonDifficulty, AttributeModifier.Operation.ADDITION);
                 dragonEntity.getAttribute(Attributes.MAX_HEALTH).addTransientModifier(healthMod);
@@ -533,9 +532,9 @@ public class DragonFightManagerCustom
 
             int addHeight = 0;
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 50; i++)
             {
-                if (world.getBlockState(pos.offset(0, i, 0)).isAir() && world.getBlockState(pos.offset(0, i - 1, 0)).getBlock() == Blocks.BEDROCK)
+                if (world.getBlockState(pos.offset(0, i, 0)).isAir() && !world.getBlockState(pos.offset(0, i - 1, 0)).isAir())
                 {
                     break;
                 }
@@ -544,7 +543,7 @@ public class DragonFightManagerCustom
 
             pos = pos.offset(0, addHeight, 0);
 
-            if (world.getEntitiesOfClass(EndCrystal.class, spike.getTopBoundingBox().move(0, addHeight, 0)).isEmpty())
+            if (world.getEntitiesOfClass(EndCrystal.class, spike.getTopBoundingBox().move(0, addHeight, 0).inflate(5)).isEmpty())
             {
                 crystalRespawnPos = pos;
                 crystalRespawnTimer = Math.max(200, CRYSTAL_RESPAWN_TIME / getDifficulty());
