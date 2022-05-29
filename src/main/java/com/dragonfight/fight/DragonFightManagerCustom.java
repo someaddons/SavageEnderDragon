@@ -523,9 +523,21 @@ public class DragonFightManagerCustom
         {
             final BlockPos pos = new BlockPos(spike.getCenterX(), spike.getHeight(), spike.getCenterZ());
 
-            if (world.getEntitiesOfClass(EndCrystal.class, spike.getTopBoundingBox()).isEmpty())
+            int addHeight = 0;
+
+            for (int i = 0; i < 50; i++)
             {
-                crystalRespawnPos = pos;
+                if (world.getBlockState(pos.offset(0, i, 0)).isAir() && !world.getBlockState(pos.offset(0, i - 1, 0)).isAir())
+                {
+                    break;
+                }
+                addHeight++;
+            }
+
+
+            if (world.getEntitiesOfClass(EndCrystal.class, spike.getTopBoundingBox().move(0, addHeight, 0).inflate(5)).isEmpty())
+            {
+                crystalRespawnPos = pos.offset(0, addHeight, 0);
                 crystalRespawnTimer = Math.max(200, CRYSTAL_RESPAWN_TIME / getDifficulty());
                 notifyPlayer(world, "Adding respawn at :" + crystalRespawnPos + " in:" + crystalRespawnTimer);
                 break;

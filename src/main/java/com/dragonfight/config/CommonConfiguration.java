@@ -17,7 +17,7 @@ public class CommonConfiguration
 
     protected CommonConfiguration(final ForgeConfigSpec.Builder builder)
     {
-        builder.push("Adventure mod settings");
+        builder.push("Dragon settings");
 
         builder.comment("Sets the dragon difficulty modifier, the higher the more difficult the dragon gets."
                           + "Scales up mob spawn amount, dragon damage and health aswell as crystal respawn intervals. Note that the difficulty already scales on the playercount involved in the fight, this is a static bonus ontop."
@@ -32,7 +32,7 @@ public class CommonConfiguration
 
         builder.comment(
           "List of mobs spawning when a crystal is destroyed at range, intended to be flying or ranged to close the gap: e.g. format :  [\"minecraft:zombie\", \"minecraft:creeper\"]");
-        spawnoncrystaldestroy = builder.defineList("forbidspawnoncrystaldestroydenMobs", Lists.newArrayList("minecraft:phantom"), e -> e instanceof String);
+        spawnoncrystaldestroy = builder.defineList("spawnoncrystaldestroy", Lists.newArrayList("minecraft:phantom"), e -> e instanceof String);
 
         builder.comment(
           "List of mobs spawning on crystal respawn, intended to be ranged to ward of players from a distance: e.g. format :  [\"minecraft:zombie\", \"minecraft:creeper\"]");

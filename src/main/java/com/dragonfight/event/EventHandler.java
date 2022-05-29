@@ -48,7 +48,7 @@ public class EventHandler
          */
         if (event.getWorld() instanceof ServerLevel && ((ServerLevel) event.getWorld()).dimension() == Level.END && DragonFightManagerCustom.isFightRunning)
         {
-            if (BlockPos.ZERO.distSqr(event.getX(), 64.0d, event.getZ(), false) < 300 * 300)
+            if (BlockPos.ZERO.distToCenterSqr(event.getX(), 64.0d, event.getZ()) < 300 * 300)
             {
                 event.setResult(Event.Result.DENY);
             }
