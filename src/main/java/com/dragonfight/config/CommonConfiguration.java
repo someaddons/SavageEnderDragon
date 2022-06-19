@@ -9,6 +9,9 @@ public class CommonConfiguration
 {
     public final ForgeConfigSpec                                     ForgeConfigSpecBuilder;
     public final ForgeConfigSpec.ConfigValue<Integer>                dragonDifficulty;
+    public final ForgeConfigSpec.ConfigValue<Double>                 crystalRespawnTimeModifier;
+    public final ForgeConfigSpec.ConfigValue<Double>                 lightningExplosionDensity;
+    public final ForgeConfigSpec.ConfigValue<Boolean>                disableLightning;
     public final ForgeConfigSpec.ConfigValue<Boolean>                printDragonPhases;
     public final ForgeConfigSpec.ConfigValue<Boolean>                disableDragonAreaSpawns;
     public final ForgeConfigSpec.ConfigValue<List<? extends String>> spawnoncrystaldestroy;
@@ -29,6 +32,15 @@ public class CommonConfiguration
 
         builder.comment("Disables mob spawning on the Dragon island: default:true");
         disableDragonAreaSpawns = builder.define("disableDragonAreaSpawns", true);
+
+        builder.comment("Disables lightning spawns: default:false");
+        disableLightning = builder.define("disableLightning", false);
+
+        builder.comment("Modifies crystal respawn time, 0.5 = spawns twice as fast, 2 = twice as slow. default:1.0");
+        crystalRespawnTimeModifier = builder.defineInRange("crystalRespawnTimeModifier", 1.0, 0.1, 10);
+
+        builder.comment("Modifies lightning and explosion density, 0.5 = half as many, 2 = twice as many. default:1.0");
+        lightningExplosionDensity = builder.defineInRange("lightningExplosionDensity", 1.0, 0.1, 10);
 
         builder.comment(
           "List of mobs spawning when a crystal is destroyed at range, intended to be flying or ranged to close the gap: e.g. format :  [\"minecraft:zombie\", \"minecraft:creeper\"]");

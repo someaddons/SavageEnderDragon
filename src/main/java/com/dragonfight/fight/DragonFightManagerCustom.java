@@ -42,9 +42,9 @@ public class DragonFightManagerCustom
     public static ImmutableList<EntityType> spawnOnCrystalRespawn = ImmutableList.of();
     public static ImmutableList<EntityType> spawnOnDragonSitting  = ImmutableList.of();
 
-    private static final int      CRYSTAL_RESPAWN_TIME    = 7000;
+    private static final float    CRYSTAL_RESPAWN_TIME    = 8000;
     private static final int      LIGHTNING_DESTROY_RANGE = 10 * 10;
-    private static final int      ADD_TIMER               = 1600;
+    private static final int      ADD_TIMER               = 2000;
     private static       BlockPos crystalRespawnPos       = null;
     private static       int      crystalRespawnTimer     = 0;
 
@@ -84,7 +84,7 @@ public class DragonFightManagerCustom
         // Spawn ground area effect making the player walk away
         areaeffectcloudentity.setParticle(ParticleTypes.DRAGON_BREATH);
         areaeffectcloudentity.setRadius(1.0F);
-        areaeffectcloudentity.setDuration(CRYSTAL_RESPAWN_TIME / getDifficulty());
+        areaeffectcloudentity.setDuration((int) ((CRYSTAL_RESPAWN_TIME / getDifficulty()) * DragonfightMod.config.getCommonConfig().crystalRespawnTimeModifier.get()));
         areaeffectcloudentity.setRadiusPerTick((5.0F - areaeffectcloudentity.getRadius()) / (float) areaeffectcloudentity.getDuration());
         areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.HARM, 100, 1));
         areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 100, 1));
@@ -100,11 +100,13 @@ public class DragonFightManagerCustom
         if (damageSource.getEntity().blockPosition().distSqr(enderCrystalEntity.blockPosition()) > LIGHTNING_DESTROY_RANGE)
         {
             // Hit player destroying the crystals from range with lightning
-            LightningBolt lightningboltentity = EntityType.LIGHTNING_BOLT.create(enderCrystalEntity.level);
-            lightningboltentity.moveTo(damageSource.getEntity().getX(), damageSource.getEntity().getY(), damageSource.getEntity().getZ());
-            lightningboltentity.setVisualOnly(false);
-            enderCrystalEntity.level.addFreshEntity(lightningboltentity);
-
+            if (!DragonfightMod.config.getCommonConfig().disableLightning.get())
+            {
+                LightningBolt lightningboltentity = EntityType.LIGHTNING_BOLT.create(enderCrystalEntity.level);
+                lightningboltentity.moveTo(damageSource.getEntity().getX(), damageSource.getEntity().getY(), damageSource.getEntity().getZ());
+                lightningboltentity.setVisualOnly(false);
+                enderCrystalEntity.level.addFreshEntity(lightningboltentity);
+            }
             // Spawn phantoms aggrod to the player
             for (int i = 0; i < Math.max(1, getDifficulty() / 4); i++)
             {
@@ -155,7 +157,7 @@ public class DragonFightManagerCustom
                 if (crystalRespawnTimer == 200)
                 {
                     // Spawns pre-respawn lightning
-                    spawnLightningAtCircle(crystalRespawnPos, 4, world);
+                    spawnLightningAtCircle(crystalRespawnPos, 5, world);
                 }
             }
             else
@@ -274,7 +276,8 @@ public class DragonFightManagerCustom
             }
         }
 
-        if (dragonEntity != null && advancingExplosionCurrent == 0 && advancingLightningCurrent == 0 && (dragonEntity.getHealth() / dragonEntity.getMaxHealth()) < 0.15d)
+        if (dragonEntity != null && advancingExplosionCurrent == 0 && advancingLightningCurrent == 0
+              && (dragonEntity.getHealth() / dragonEntity.getMaxHealth()) < (DragonfightMod.config.getCommonConfig().disableLightning.get() ? 0.5d : 0.20d))
         {
             advancingExplosionCurrent = 8;
             advancingExplosionStop = 50;
@@ -392,11 +395,13 @@ public class DragonFightManagerCustom
             crystal.setPos(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
             world.addFreshEntity(crystal);
 
-            for (int i = 0; i < getDifficulty() / 2; i++)
+            final BlockPos spawnPos = new BlockPos(pos.getX() * 0.8, pos.getY(), pos.getZ() * 0.8);
+
+            for (int i = 0; i < Math.max(1, getDifficulty() / 3); i++)
             {
                 // Spawn blaze on respawn
                 final LivingEntity entity = (LivingEntity) spawnOnCrystalRespawn.get(DragonfightMod.rand.nextInt(spawnOnCrystalRespawn.size())).create(world);
-                entity.setPos(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+                entity.setPos(spawnPos.getX() + 0.5, spawnPos.getY() + 0.5 + i, spawnPos.getZ() + 0.5);
                 world.addFreshEntity(entity);
 
                 if (entity instanceof Mob)
@@ -538,7 +543,7 @@ public class DragonFightManagerCustom
             if (world.getEntitiesOfClass(EndCrystal.class, spike.getTopBoundingBox().move(0, addHeight, 0).inflate(5)).isEmpty())
             {
                 crystalRespawnPos = pos.offset(0, addHeight, 0);
-                crystalRespawnTimer = Math.max(200, CRYSTAL_RESPAWN_TIME / getDifficulty());
+                crystalRespawnTimer = (int) Math.max(400, (CRYSTAL_RESPAWN_TIME / getDifficulty()) * DragonfightMod.config.getCommonConfig().crystalRespawnTimeModifier.get());
                 notifyPlayer(world, "Adding respawn at :" + crystalRespawnPos + " in:" + crystalRespawnTimer);
                 break;
             }
@@ -554,7 +559,12 @@ public class DragonFightManagerCustom
      */
     private static void spawnLightningAtCircle(final BlockPos midPoint, final int radius, final Level world)
     {
-        Set<BlockPos> lightningPositions = getCircularPositionsAround(midPoint, radius, 5);
+        if (DragonfightMod.config.getCommonConfig().disableLightning.get())
+        {
+            return;
+        }
+
+        Set<BlockPos> lightningPositions = getCircularPositionsAround(midPoint, radius, 15 - (radius / 10));
         for (final BlockPos lightningPos : lightningPositions)
         {
             notifyPlayer(world,
@@ -612,11 +622,13 @@ public class DragonFightManagerCustom
         }
     }
 
-    private static Set<BlockPos> getCircularPositionsAround(final BlockPos start, final int radius, final int precision)
+    private static Set<BlockPos> getCircularPositionsAround(final BlockPos start, final int radius, int precision)
     {
         Set<BlockPos> positions = new HashSet<>();
 
-        for (int i = 0; i < 360; i += precision)
+        precision = (int) (precision / DragonfightMod.config.getCommonConfig().lightningExplosionDensity.get());
+        final int randomOffset = DragonfightMod.rand.nextInt(40);
+        for (int i = randomOffset; i < 360 + randomOffset; i += precision)
         {
             int x = (int) Math.round(radius * Math.cos(Math.toRadians(i)));
             int z = (int) Math.round(radius * Math.sin(Math.toRadians(i)));
