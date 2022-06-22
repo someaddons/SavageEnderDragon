@@ -11,12 +11,15 @@ import java.util.List;
 
 public class CommonConfiguration
 {
-    public int          dragonDifficulty        = 2;
-    public boolean      printDragonPhases       = false;
-    public boolean      disableDragonAreaSpawns = true;
-    public List<String> spawnoncrystaldestroy   = Lists.newArrayList("minecraft:phantom");
-    public List<String> spawnoncrystalrespawn   = Lists.newArrayList("minecraft:blaze");
-    public List<String> spawnwhilelanded        = Lists.newArrayList("minecraft:enderman");
+    public int          dragonDifficulty           = 2;
+    public boolean      printDragonPhases          = false;
+    public boolean      disableDragonAreaSpawns    = true;
+    public List<String> spawnoncrystaldestroy      = Lists.newArrayList("minecraft:phantom");
+    public List<String> spawnoncrystalrespawn      = Lists.newArrayList("minecraft:blaze");
+    public List<String> spawnwhilelanded           = Lists.newArrayList("minecraft:enderman");
+    public double       crystalRespawnTimeModifier = 1.0;
+    public double       lightningExplosionDensity  = 1.0;
+    public boolean      disableLightning           = false;
 
     protected CommonConfiguration()
     {
@@ -33,13 +36,29 @@ public class CommonConfiguration
         entry.addProperty("dragonDifficulty", dragonDifficulty);
         root.add("dragonDifficulty", entry);
 
+        final JsonObject entry8 = new JsonObject();
+        entry8.addProperty("desc:", "Modifies crystal respawn time, 0.5 = spawns twice as fast, 2 = twice as slow. default:1.0");
+        entry8.addProperty("crystalRespawnTimeModifier", crystalRespawnTimeModifier);
+        root.add("crystalRespawnTimeModifier", entry8);
+
+        final JsonObject entry9 = new JsonObject();
+        entry9.addProperty("desc:", "Modifies lightning and explosion density, 0.5 = half as many, 2 = twice as many. default:1.0");
+        entry9.addProperty("lightningExplosionDensity", lightningExplosionDensity);
+        root.add("lightningExplosionDensity", entry9);
+
+        final JsonObject entry10 = new JsonObject();
+        entry10.addProperty("desc:", "Disables lightning spawns: default:false");
+        entry10.addProperty("disableLightning", disableLightning);
+        root.add("disableLightning", entry10);
+
+
         final JsonObject entry2 = new JsonObject();
         entry2.addProperty("desc:", "Prints the dragon phase in chat if enabled: default:false");
         entry2.addProperty("printDragonPhases", printDragonPhases);
         root.add("printDragonPhases", entry2);
 
         final JsonObject entry3 = new JsonObject();
-        entry3.addProperty("desc:", "Disables mob spawning on the Dragon island: default:true");
+        entry3.addProperty("desc:", "Disables mob spawning on the Dragon island during the fight: default:true");
         entry3.addProperty("disableDragonAreaSpawns", disableDragonAreaSpawns);
         root.add("disableDragonAreaSpawns", entry3);
 
@@ -91,7 +110,10 @@ public class CommonConfiguration
         try
         {
             dragonDifficulty = data.get("dragonDifficulty").getAsJsonObject().get("dragonDifficulty").getAsInt();
+            crystalRespawnTimeModifier = data.get("crystalRespawnTimeModifier").getAsJsonObject().get("crystalRespawnTimeModifier").getAsDouble();
+            lightningExplosionDensity = data.get("lightningExplosionDensity").getAsJsonObject().get("lightningExplosionDensity").getAsDouble();
             printDragonPhases = data.get("printDragonPhases").getAsJsonObject().get("printDragonPhases").getAsBoolean();
+            disableLightning = data.get("disableLightning").getAsJsonObject().get("disableLightning").getAsBoolean();
             disableDragonAreaSpawns = data.get("disableDragonAreaSpawns").getAsJsonObject().get("disableDragonAreaSpawns").getAsBoolean();
             spawnoncrystaldestroy = new ArrayList<>();
             for (final JsonElement element : data.get("spawnoncrystaldestroy").getAsJsonObject().get("spawnoncrystaldestroy").getAsJsonArray())
