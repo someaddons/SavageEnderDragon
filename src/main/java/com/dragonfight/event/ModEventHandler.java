@@ -36,7 +36,7 @@ public class ModEventHandler
                     continue;
                 }
 
-                final EntityType type = ForgeRegistries.ENTITIES.getValue(id);
+                final EntityType type = ForgeRegistries.ENTITY_TYPES.getValue(id);
                 if (type == null)
                 {
                     DragonfightMod.LOGGER.error("Config entry could not be parsed, not a valid entity type" + entityString);

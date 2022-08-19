@@ -8,7 +8,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -20,16 +20,16 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 public class EventHandler
 {
     @SubscribeEvent
-    public static void onWorldTick(final TickEvent.WorldTickEvent event)
+    public static void onWorldTick(final TickEvent.LevelTickEvent event)
     {
-        if (!event.world.isClientSide && event.world.dimension() == Level.END)
+        if (!event.level.isClientSide && event.level.dimension() == Level.END)
         {
-            DragonFightManagerCustom.onWorldTick(event.world);
+            DragonFightManagerCustom.onWorldTick(event.level);
         }
     }
 
     @SubscribeEvent
-    public static void onEnterWorld(final EntityJoinWorldEvent event)
+    public static void onEnterWorld(final EntityJoinLevelEvent event)
     {
         if (event.getEntity() instanceof EnderDragon)
         {
@@ -46,7 +46,7 @@ public class EventHandler
         /**
          * Disable entity spawn for the dragon fight
          */
-        if (event.getWorld() instanceof ServerLevel && ((ServerLevel) event.getWorld()).dimension() == Level.END && DragonFightManagerCustom.isFightRunning)
+        if (event.getLevel() instanceof ServerLevel && ((ServerLevel) event.getLevel()).dimension() == Level.END && DragonFightManagerCustom.isFightRunning)
         {
             if (BlockPos.ZERO.distToCenterSqr(event.getX(), 64.0d, event.getZ()) < 300 * 300)
             {
