@@ -4,7 +4,7 @@ import com.dragonfight.DragonfightMod;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
@@ -662,7 +662,7 @@ public class DragonFightManagerCustom
             {
                 if (world.getServer() != null && ((ServerLevel) world).getServer().getProfilePermissions(player.getGameProfile()) > 0)
                 {
-                    player.sendMessage(new TextComponent(message), player.getUUID());
+                    player.sendSystemMessage(Component.literal(message));
                 }
             }
         }
