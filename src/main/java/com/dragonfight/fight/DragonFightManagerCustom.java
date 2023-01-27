@@ -4,6 +4,7 @@ import com.dragonfight.DragonfightMod;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -27,6 +28,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
 import net.minecraft.world.level.levelgen.feature.SpikeFeature;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
 import java.util.*;
@@ -51,7 +54,7 @@ public class DragonFightManagerCustom
     private static int timeSinceLastLanding = 0;
 
     /**
-     * ^^ Add counters
+     * Add counters
      */
     private static       boolean        spawnAdds    = false;
     private final static BlockPos       spawnPos     = new BlockPos(0, 68, 0);
@@ -102,21 +105,25 @@ public class DragonFightManagerCustom
             // Hit player destroying the crystals from range with lightning
             if (!DragonfightMod.config.getCommonConfig().disableLightning.get())
             {
-                LightningBolt lightningboltentity = EntityType.LIGHTNING_BOLT.create(enderCrystalEntity.level);
-                lightningboltentity.moveTo(damageSource.getEntity().getX(), damageSource.getEntity().getY(), damageSource.getEntity().getZ());
+                LightningBolt lightningboltentity =
+                  (LightningBolt) spawnEntity((ServerLevel) enderCrystalEntity.level, EntityType.LIGHTNING_BOLT, damageSource.getEntity().position());
                 lightningboltentity.setVisualOnly(false);
                 enderCrystalEntity.level.addFreshEntity(lightningboltentity);
             }
-            // Spawn phantoms aggrod to the player
-            for (int i = 0; i < Math.max(1, getDifficulty() / 4); i++)
+
+            if (!spawnOnCrystalDeath.isEmpty())
             {
-                final LivingEntity entity = (LivingEntity) spawnOnCrystalDeath.get(DragonfightMod.rand.nextInt(spawnOnCrystalDeath.size())).create(enderCrystalEntity.level);
-                if (entity instanceof Mob)
+                // Spawn phantoms aggrod to the player
+                for (int i = 0; i < Math.max(1, getDifficulty() / 4); i++)
                 {
-                    ((Mob) entity).setTarget((LivingEntity) damageSource.getEntity());
+                    final LivingEntity entity = (LivingEntity) spawnEntity((ServerLevel) enderCrystalEntity.level,
+                      spawnOnCrystalDeath.get(DragonfightMod.rand.nextInt(spawnOnCrystalDeath.size())),
+                      createVec3(damageSource.getEntity().blockPosition()).add(0, 5, 0));
+                    if (entity instanceof Mob)
+                    {
+                        ((Mob) entity).setTarget((LivingEntity) damageSource.getEntity());
+                    }
                 }
-                entity.moveTo(damageSource.getEntity().getX(), damageSource.getEntity().getY() + 5, damageSource.getEntity().getZ());
-                enderCrystalEntity.level.addFreshEntity(entity);
             }
         }
         else
@@ -348,21 +355,20 @@ public class DragonFightManagerCustom
     {
         meleeAdds.removeIf(endermanEntity -> endermanEntity.isRemoved());
 
-        if (meleeAdds.size() >= getDifficulty())
+        if (meleeAdds.size() >= getDifficulty() || spawnOnDragonSitting.isEmpty())
         {
             return;
         }
 
-        final LivingEntity entity = (LivingEntity) spawnOnDragonSitting.get(DragonfightMod.rand.nextInt(spawnOnDragonSitting.size())).create(world);
-        entity.moveTo(spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
-        world.addFreshEntity(entity);
+        final LivingEntity entity =
+          (LivingEntity) spawnEntity((ServerLevel) world, spawnOnDragonSitting.get(DragonfightMod.rand.nextInt(spawnOnDragonSitting.size())), createVec3(spawnPos));
 
-        final List<Player> closesPlayers = world.getNearbyPlayers(TargetingConditions.DEFAULT, entity, entity.getBoundingBox().inflate(20));
-        if (!closesPlayers.isEmpty())
+        if (entity instanceof Mob)
         {
-            final Player closestPlayer = closesPlayers.get(DragonfightMod.rand.nextInt(closesPlayers.size()));
-            if (entity instanceof Mob)
+            final List<Player> closesPlayers = world.getNearbyPlayers(TargetingConditions.DEFAULT, entity, entity.getBoundingBox().inflate(20));
+            if (!closesPlayers.isEmpty())
             {
+                final Player closestPlayer = closesPlayers.get(DragonfightMod.rand.nextInt(closesPlayers.size()));
                 ((Mob) entity).setTarget(closestPlayer);
             }
         }
@@ -372,10 +378,7 @@ public class DragonFightManagerCustom
             if (!farPlayers.isEmpty())
             {
                 final Player closestPlayer = farPlayers.get(DragonfightMod.rand.nextInt(farPlayers.size()));
-                if (entity instanceof Mob)
-                {
-                    ((Mob) entity).setTarget(closestPlayer);
-                }
+                ((Mob) entity).setTarget(closestPlayer);
             }
         }
     }
@@ -391,22 +394,22 @@ public class DragonFightManagerCustom
         if (world.getEntitiesOfClass(EndCrystal.class, new AABB(pos).inflate(2)).isEmpty())
         {
             // Respawn crystal
-            final EndCrystal crystal = EntityType.END_CRYSTAL.create(world);
-            crystal.setPos(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
-            world.addFreshEntity(crystal);
+            final EndCrystal crystal = (EndCrystal) spawnEntity((ServerLevel) world, EntityType.END_CRYSTAL, createVec3(pos));
+            final Vec3 spawnPos = createVec3(new BlockPos(pos.getX() * 0.8, pos.getY(), pos.getZ() * 0.8));
 
-            final BlockPos spawnPos = new BlockPos(pos.getX() * 0.8, pos.getY(), pos.getZ() * 0.8);
-
-            for (int i = 0; i < Math.max(1, getDifficulty() / 3); i++)
+            if (!spawnOnCrystalRespawn.isEmpty())
             {
-                // Spawn blaze on respawn
-                final LivingEntity entity = (LivingEntity) spawnOnCrystalRespawn.get(DragonfightMod.rand.nextInt(spawnOnCrystalRespawn.size())).create(world);
-                entity.setPos(spawnPos.getX() + 0.5, spawnPos.getY() + 0.5 + i, spawnPos.getZ() + 0.5);
-                world.addFreshEntity(entity);
-
-                if (entity instanceof Mob)
+                for (int i = 0; i < Math.max(1, getDifficulty() / 3); i++)
                 {
-                    ((Mob) entity).setTarget(world.getNearestPlayer(entity, 100));
+                    // Spawn blaze on respawn
+                    final Entity entity = spawnEntity((ServerLevel) world,
+                      spawnOnCrystalRespawn.get(DragonfightMod.rand.nextInt(spawnOnCrystalRespawn.size())),
+                      spawnPos.add(0, i, 0));
+
+                    if (entity instanceof Mob)
+                    {
+                        ((Mob) entity).setTarget(world.getNearestPlayer(entity, 100));
+                    }
                 }
             }
 
@@ -678,5 +681,33 @@ public class DragonFightManagerCustom
         }
 
         return Math.max(difficulty, 1);
+    }
+
+    private static Vec3 createVec3(final BlockPos pos)
+    {
+        return new Vec3(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    private static Entity spawnEntity(final ServerLevel world, EntityType entityType, Vec3 pos)
+    {
+        CompoundTag compoundtag = new CompoundTag();
+        compoundtag.putString("id", ForgeRegistries.ENTITY_TYPES.getKey(entityType).toString());
+        Entity entity = EntityType.loadEntityRecursive(compoundtag, world, (p_138828_) -> {
+
+            // TODO: TEST
+            final double offset = pos.x % 1d != 0d || pos.z % 1d != 0d ? 0.5 : 0;
+
+            p_138828_.moveTo(pos.x + offset, pos.y, pos.z + offset, p_138828_.getYRot(), p_138828_.getXRot());
+            return p_138828_;
+        });
+
+        if (entity instanceof Mob)
+        {
+            ((Mob) entity).finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.COMMAND, (SpawnGroupData) null, (CompoundTag) null);
+        }
+
+        world.addFreshEntity(entity);
+
+        return entity;
     }
 }
