@@ -693,8 +693,7 @@ public class DragonFightManagerCustom
         compoundtag.putString("id", ForgeRegistries.ENTITY_TYPES.getKey(entityType).toString());
         Entity entity = EntityType.loadEntityRecursive(compoundtag, world, (p_138828_) -> {
 
-            // TODO: TEST
-            final double offset = pos.x % 1d != 0d || pos.z % 1d != 0d ? 0.5 : 0;
+            final double offset = pos.x % 1d != 0d || pos.z % 1d != 0d ? 0 : 0.5;
 
             p_138828_.moveTo(pos.x + offset, pos.y, pos.z + offset, p_138828_.getYRot(), p_138828_.getXRot());
             return p_138828_;
