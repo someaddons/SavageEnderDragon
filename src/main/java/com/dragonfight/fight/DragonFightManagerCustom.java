@@ -3,8 +3,8 @@ package com.dragonfight.fight;
 import com.dragonfight.DragonfightMod;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -25,7 +25,6 @@ import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.npc.Npc;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
 import net.minecraft.world.level.levelgen.feature.SpikeFeature;
@@ -627,7 +626,7 @@ public class DragonFightManagerCustom
               lightningPos.getZ(),
               1 + getDifficulty() / 4f,
               false,
-              Explosion.BlockInteraction.NONE);
+              Level.ExplosionInteraction.NONE);
         }
     }
 
@@ -697,7 +696,7 @@ public class DragonFightManagerCustom
     private static Entity spawnEntity(final ServerLevel world, EntityType entityType, Vec3 pos)
     {
         CompoundTag compoundtag = new CompoundTag();
-        compoundtag.putString("id", Registry.ENTITY_TYPE.getKey(entityType).toString());
+        compoundtag.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(entityType).toString());
         Entity entity = EntityType.loadEntityRecursive(compoundtag, world, (p_138828_) -> {
 
             final double offset = pos.x % 1d != 0d || pos.z % 1d != 0d ? 0 : 0.5;
