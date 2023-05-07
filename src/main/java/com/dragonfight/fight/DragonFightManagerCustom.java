@@ -23,7 +23,6 @@ import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.npc.Npc;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
 import net.minecraft.world.level.levelgen.feature.SpikeFeature;
@@ -621,7 +620,7 @@ public class DragonFightManagerCustom
               lightningPos.getZ(),
               1 + getDifficulty() / 4,
               false,
-              Explosion.BlockInteraction.NONE);
+              Level.ExplosionInteraction.NONE);
         }
     }
 
