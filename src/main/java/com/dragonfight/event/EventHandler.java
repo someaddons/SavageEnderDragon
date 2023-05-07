@@ -9,8 +9,7 @@ import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.living.LivingSpawnEvent;
-import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -41,7 +40,7 @@ public class EventHandler
     }
 
     @SubscribeEvent
-    public static void onLivingSpawn(final LivingSpawnEvent.CheckSpawn event)
+    public static void onLivingSpawn(final MobSpawnEvent.FinalizeSpawn event)
     {
         /**
          * Disable entity spawn for the dragon fight
@@ -50,7 +49,7 @@ public class EventHandler
         {
             if (BlockPos.ZERO.distToCenterSqr(event.getX(), 64.0d, event.getZ()) < 300 * 300)
             {
-                event.setResult(Event.Result.DENY);
+                event.setSpawnCancelled(true);
             }
         }
     }

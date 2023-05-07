@@ -1,7 +1,6 @@
 package com.dragonfight.mixin.dragon;
 
 import com.dragonfight.DragonfightMod;
-import net.minecraft.world.damagesource.EntityDamageSource;
 import net.minecraft.world.entity.projectile.DragonFireball;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
@@ -22,7 +21,7 @@ public class DragonFireballEntityMixin
     private void onHit(final HitResult rayTraceResult, final CallbackInfo ci)
     {
         self.level.explode(null,
-          new EntityDamageSource("weakexplosion", self.getOwner()),
+          self.damageSources().mobProjectile(self, null),
           null,
           rayTraceResult.getLocation().x,
           rayTraceResult.getLocation().y,
