@@ -249,7 +249,7 @@ public class DragonFightManagerCustom
                 }
                 else if (time > 400)
                 {
-                    player.hurt(DamageSource.FALL, player.getMaxHealth() * 0.9f);
+                    player.hurt(dragonEntity.damageSources().fall(), player.getMaxHealth() * 0.9f);
                     player.setHealth(1);
                     flyingPlayers.put(player.getUUID(), 0);
                 }
@@ -262,7 +262,7 @@ public class DragonFightManagerCustom
             {
                 if (time > 300)
                 {
-                    player.hurt(DamageSource.FALL, player.getMaxHealth() * 0.9f);
+                    player.hurt(dragonEntity.damageSources().fall(), player.getMaxHealth() * 0.9f);
                     player.setHealth(1);
                 }
                 flyingPlayers.put(player.getUUID(), 0);
@@ -403,13 +403,13 @@ public class DragonFightManagerCustom
             final Entity crystal = spawnEntity((ServerLevel) world, EntityType.END_CRYSTAL, Vec3.atCenterOf(pos));
             crystal.setPos(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
 
-            final BlockPos spawnPos = new BlockPos(pos.getX() * 0.8, pos.getY(), pos.getZ() * 0.8);
+            final Vec3 spawnPos = createVec3(new BlockPos((int) (pos.getX() * 0.8), pos.getY(), (int) (pos.getZ() * 0.8)));
 
             for (int i = 0; i < Math.max(1, getDifficulty() / 3) && !spawnOnCrystalRespawn.isEmpty(); i++)
             {
                 // Spawn blaze on respawn
                 final LivingEntity entity =
-                  (LivingEntity) spawnEntity((ServerLevel) world, spawnOnCrystalRespawn.get(DragonfightMod.rand.nextInt(spawnOnCrystalRespawn.size())), createVec3(spawnPos));
+                  (LivingEntity) spawnEntity((ServerLevel) world, spawnOnCrystalRespawn.get(DragonfightMod.rand.nextInt(spawnOnCrystalRespawn.size())), spawnPos);
 
                 if (entity instanceof Mob)
                 {
