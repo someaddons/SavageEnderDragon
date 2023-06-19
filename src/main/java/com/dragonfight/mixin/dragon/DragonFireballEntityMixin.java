@@ -20,7 +20,7 @@ public class DragonFireballEntityMixin
     @Inject(method = "onHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/AreaEffectCloud;setPos(DDD)V"))
     private void onHit(final HitResult rayTraceResult, final CallbackInfo ci)
     {
-        self.level.explode(null,
+        self.level().explode(null,
           self.damageSources().mobProjectile(self, null),
           null,
           rayTraceResult.getLocation().x,
