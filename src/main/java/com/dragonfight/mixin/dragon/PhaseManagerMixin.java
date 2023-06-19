@@ -26,7 +26,7 @@ public class PhaseManagerMixin
     @Inject(method = "setPhase", at = @At("HEAD"))
     private void onPhaseChange(final EnderDragonPhase<?> phaseType, final CallbackInfo ci)
     {
-        if (currentPhase != null && phaseType != this.currentPhase.getPhase() && !dragon.level.isClientSide)
+        if (currentPhase != null && phaseType != this.currentPhase.getPhase() && !dragon.level().isClientSide)
         {
             DragonFightManagerCustom.onPhaseChange(phaseType, this.currentPhase.getPhase(), dragon);
         }

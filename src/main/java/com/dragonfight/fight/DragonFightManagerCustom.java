@@ -76,14 +76,14 @@ public class DragonFightManagerCustom
     public static void onCrystalDeath(final EndCrystal enderCrystalEntity, final DamageSource damageSource)
     {
         AreaEffectCloud areaeffectcloudentity =
-          new AreaEffectCloud(enderCrystalEntity.level, enderCrystalEntity.getX(), enderCrystalEntity.getY(), enderCrystalEntity.getZ());
+          new AreaEffectCloud(enderCrystalEntity.level(), enderCrystalEntity.getX(), enderCrystalEntity.getY(), enderCrystalEntity.getZ());
 
         if (dragonEntity != null)
         {
             areaeffectcloudentity.setOwner(dragonEntity);
         }
 
-        notifyPlayer(enderCrystalEntity.level, "Crystal died from:" + damageSource);
+        notifyPlayer(enderCrystalEntity.level(), "Crystal died from:" + damageSource);
         // Spawn ground area effect making the player walk away
         areaeffectcloudentity.setParticle(ParticleTypes.DRAGON_BREATH);
         areaeffectcloudentity.setRadius(1.0F);
@@ -92,7 +92,7 @@ public class DragonFightManagerCustom
         areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.HARM, 100, 1));
         areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 100, 1));
         areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
-        enderCrystalEntity.level.addFreshEntity(areaeffectcloudentity);
+        enderCrystalEntity.level().addFreshEntity(areaeffectcloudentity);
 
         if (!(damageSource.getEntity() instanceof Player))
         {
@@ -106,14 +106,14 @@ public class DragonFightManagerCustom
             {
                 // Hit player destroying the crystals from range with lightning
                 LightningBolt lightningboltentity =
-                  (LightningBolt) spawnEntity((ServerLevel) enderCrystalEntity.level, EntityType.LIGHTNING_BOLT, damageSource.getEntity().position());
+                  (LightningBolt) spawnEntity((ServerLevel) enderCrystalEntity.level(), EntityType.LIGHTNING_BOLT, damageSource.getEntity().position());
                 lightningboltentity.setVisualOnly(false);
             }
 
             // Spawn phantoms aggrod to the player
             for (int i = 0; i < Math.max(1, getDifficulty() / 4); i++)
             {
-                final LivingEntity entity = (LivingEntity) spawnEntity((ServerLevel) enderCrystalEntity.level,
+                final LivingEntity entity = (LivingEntity) spawnEntity((ServerLevel) enderCrystalEntity.level(),
                   spawnOnCrystalDeath.get(DragonfightMod.rand.nextInt(spawnOnCrystalDeath.size())),
                   damageSource.getEntity().position().add(0, 5, 0));
                 if (entity instanceof Mob)
@@ -131,7 +131,7 @@ public class DragonFightManagerCustom
                 float f = (DragonfightMod.rand.nextFloat() - 0.5F) * 8.0F;
                 float f1 = (DragonfightMod.rand.nextFloat() - 0.5F) * 4.0F;
                 float f2 = (DragonfightMod.rand.nextFloat() - 0.5F) * 8.0F;
-                dragonEntity.level.addParticle(ParticleTypes.EXPLOSION_EMITTER,
+                dragonEntity.level().addParticle(ParticleTypes.EXPLOSION_EMITTER,
                   dragonEntity.getX() + (double) f,
                   dragonEntity.getY() + 2.0D + (double) f1,
                   dragonEntity.getZ() + (double) f2,
@@ -146,7 +146,7 @@ public class DragonFightManagerCustom
 
     public static void onWorldTick(final Level world)
     {
-        final EndDragonFight manager = ((ServerLevel) world).dragonFight();
+        final EndDragonFight manager = ((ServerLevel) world).getDragonFight();
         if (manager == null || ((IDragonfightAccessor) manager).getDragonEvent().getPlayers().isEmpty() || dragonEntity == null)
         {
             reset();
@@ -316,7 +316,7 @@ public class DragonFightManagerCustom
      */
     private static boolean isFlying(final Player player)
     {
-        return player != null && (player.hasImpulse || !player.isOnGround()) && player.fallDistance <= 0.1f && player.level.isEmptyBlock(player.blockPosition().below(2));
+        return player != null && (player.hasImpulse || !player.onGround()) && player.fallDistance <= 0.1f && player.level().isEmptyBlock(player.blockPosition().below(2));
     }
 
     /**
@@ -460,28 +460,28 @@ public class DragonFightManagerCustom
             return;
         }
 
-        if (dragon == null || !(dragon.level instanceof ServerLevel) || !dragonEntity.isAlive())
+        if (dragon == null || !(dragon.level() instanceof ServerLevel) || !dragonEntity.isAlive())
         {
             return;
         }
 
-        final EndDragonFight manager = ((ServerLevel) dragon.level).dragonFight();
+        final EndDragonFight manager = ((ServerLevel) dragon.level()).getDragonFight();
         if (manager == null || ((IDragonfightAccessor) manager).getDragonEvent().getPlayers().isEmpty())
         {
             return;
         }
 
-        notifyPlayer(dragon.level, "Next phase:" + newPhase.toString());
+        notifyPlayer(dragon.level(), "Next phase:" + newPhase.toString());
 
         if (newPhase == EnderDragonPhase.TAKEOFF)
         {
             // Start spawning endermen
             spawnAdds = true;
 
-            checkCrystalsToRespawn(dragon.level);
+            checkCrystalsToRespawn(dragon.level());
             if ((dragon.getHealth() / dragon.getMaxHealth()) < 0.25d && dragon.getDragonFight() != null)
             {
-                dragon.level.playLocalSound(dragon.getX(),
+                dragon.level().playLocalSound(dragon.getX(),
                   dragon.getY(),
                   dragon.getZ(),
                   SoundEvents.ENDER_DRAGON_GROWL,
@@ -517,7 +517,7 @@ public class DragonFightManagerCustom
             }
             else
             {
-                spawnLightningAtCircle(spawnPos, DragonfightMod.rand.nextInt(16) + 8, dragon.level);
+                spawnLightningAtCircle(spawnPos, DragonfightMod.rand.nextInt(16) + 8, dragon.level());
             }
         }
     }
@@ -678,7 +678,7 @@ public class DragonFightManagerCustom
 
         if (dragonEntity != null)
         {
-            difficulty += dragonEntity.level.getDifficulty().getId();
+            difficulty += dragonEntity.level().getDifficulty().getId();
             if (dragonEntity.getDragonFight() != null)
             {
                 difficulty += ((IDragonfightAccessor) dragonEntity.getDragonFight()).getDragonEvent().getPlayers().size();
