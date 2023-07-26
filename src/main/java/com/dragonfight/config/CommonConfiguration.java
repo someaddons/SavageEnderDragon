@@ -1,6 +1,6 @@
 package com.dragonfight.config;
 
-import com.dragonfight.DragonfightMod;
+import com.cupboard.config.ICommonConfig;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -9,7 +9,7 @@ import com.google.gson.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CommonConfiguration
+public class CommonConfiguration implements ICommonConfig
 {
     public int          dragonDifficulty           = 2;
     public boolean      printDragonPhases          = false;
@@ -21,7 +21,7 @@ public class CommonConfiguration
     public double       lightningExplosionDensity  = 1.0;
     public boolean      disableLightning           = false;
 
-    protected CommonConfiguration()
+    public CommonConfiguration()
     {
     }
 
@@ -101,40 +101,29 @@ public class CommonConfiguration
 
     public void deserialize(JsonObject data)
     {
-        if (data == null)
+        dragonDifficulty = data.get("dragonDifficulty").getAsJsonObject().get("dragonDifficulty").getAsInt();
+        crystalRespawnTimeModifier = data.get("crystalRespawnTimeModifier").getAsJsonObject().get("crystalRespawnTimeModifier").getAsDouble();
+        lightningExplosionDensity = data.get("lightningExplosionDensity").getAsJsonObject().get("lightningExplosionDensity").getAsDouble();
+        printDragonPhases = data.get("printDragonPhases").getAsJsonObject().get("printDragonPhases").getAsBoolean();
+        disableLightning = data.get("disableLightning").getAsJsonObject().get("disableLightning").getAsBoolean();
+        disableDragonAreaSpawns = data.get("disableDragonAreaSpawns").getAsJsonObject().get("disableDragonAreaSpawns").getAsBoolean();
+        spawnoncrystaldestroy = new ArrayList<>();
+        for (final JsonElement element : data.get("spawnoncrystaldestroy").getAsJsonObject().get("spawnoncrystaldestroy").getAsJsonArray())
         {
-            DragonfightMod.LOGGER.error("Config file was empty!");
-            return;
+            spawnoncrystaldestroy.add(element.getAsString());
         }
 
-        try
+        spawnoncrystalrespawn = new ArrayList<>();
+        for (final JsonElement element : data.get("spawnoncrystalrespawn").getAsJsonObject().get("spawnoncrystalrespawn").getAsJsonArray())
         {
-            dragonDifficulty = data.get("dragonDifficulty").getAsJsonObject().get("dragonDifficulty").getAsInt();
-            crystalRespawnTimeModifier = data.get("crystalRespawnTimeModifier").getAsJsonObject().get("crystalRespawnTimeModifier").getAsDouble();
-            lightningExplosionDensity = data.get("lightningExplosionDensity").getAsJsonObject().get("lightningExplosionDensity").getAsDouble();
-            printDragonPhases = data.get("printDragonPhases").getAsJsonObject().get("printDragonPhases").getAsBoolean();
-            disableLightning = data.get("disableLightning").getAsJsonObject().get("disableLightning").getAsBoolean();
-            disableDragonAreaSpawns = data.get("disableDragonAreaSpawns").getAsJsonObject().get("disableDragonAreaSpawns").getAsBoolean();
-            spawnoncrystaldestroy = new ArrayList<>();
-            for (final JsonElement element : data.get("spawnoncrystaldestroy").getAsJsonObject().get("spawnoncrystaldestroy").getAsJsonArray())
-            {
-                spawnoncrystaldestroy.add(element.getAsString());
-            }
+            spawnoncrystalrespawn.add(element.getAsString());
+        }
+        spawnwhilelanded = new ArrayList<>();
+        for (final JsonElement element : data.get("spawnwhilelanded").getAsJsonObject().get("spawnwhilelanded").getAsJsonArray())
+        {
+            spawnwhilelanded.add(element.getAsString());
+        }
 
-            spawnoncrystalrespawn = new ArrayList<>();
-            for (final JsonElement element : data.get("spawnoncrystalrespawn").getAsJsonObject().get("spawnoncrystalrespawn").getAsJsonArray())
-            {
-                spawnoncrystalrespawn.add(element.getAsString());
-            }
-            spawnwhilelanded = new ArrayList<>();
-            for (final JsonElement element : data.get("spawnwhilelanded").getAsJsonObject().get("spawnwhilelanded").getAsJsonArray())
-            {
-                spawnwhilelanded.add(element.getAsString());
-            }
-        }
-        catch (Exception e)
-        {
-            DragonfightMod.LOGGER.error("Could not parse config file", e);
-        }
+        ConfigurationCache.onConfigChanged();
     }
 }

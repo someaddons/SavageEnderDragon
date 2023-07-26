@@ -34,11 +34,12 @@ public class ConfigurationCache
                 }
 
                 final EntityType type = Registry.ENTITY_TYPE.get(id);
-                if (id.equals(Registry.ENTITY_TYPE.getDefaultKey()))
+                if (type.equals(Registry.ENTITY_TYPE.get(Registry.ENTITY_TYPE.getDefaultKey())))
                 {
                     DragonfightMod.LOGGER.error("Config entry could not be parsed, not a valid entity type" + entityString);
                     continue;
                 }
+
                 builder.add(type);
             }
         }

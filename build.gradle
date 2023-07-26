@@ -30,7 +30,7 @@ dependencies {
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
    // modImplementation "curse.maven:betterend-413596:3769273"
-    //modImplementation "curse.maven:lib-495191:3772055"
+    modImplementation "curse.maven:cupboard-326652:4665451"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
