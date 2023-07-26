@@ -1,6 +1,7 @@
 package com.dragonfight;
 
-import com.dragonfight.config.Configuration;
+import com.cupboard.config.CupboardConfig;
+import com.dragonfight.config.CommonConfiguration;
 import com.dragonfight.event.EventHandler;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -14,11 +15,11 @@ import java.util.Random;
 // The value here should match an entry in the META-INF/mods.toml file
 public class DragonfightMod implements ModInitializer
 {
-    public static final String          MODID  = "dragonfight";
-    public static final Logger          LOGGER = LogManager.getLogger();
-    public static       Configuration   config = new Configuration();
-    public static       Random          rand   = new Random();
-    public static       MinecraftServer server = null;
+    public static final String                              MODID  = "dragonfight";
+    public static final Logger                              LOGGER = LogManager.getLogger();
+    public static       CupboardConfig<CommonConfiguration> config = new CupboardConfig<>(MODID, new CommonConfiguration());
+    public static       Random                              rand   = new Random();
+    public static       MinecraftServer                     server = null;
 
     public DragonfightMod()
     {
@@ -27,7 +28,6 @@ public class DragonfightMod implements ModInitializer
     @Override
     public void onInitialize()
     {
-        config.load();
         ServerTickEvents.END_WORLD_TICK.register(EventHandler::onWorldTick);
         ServerLifecycleEvents.SERVER_STARTING.register(tserver -> {server = tserver;});
         ServerLifecycleEvents.SERVER_STOPPING.register(tserver -> {server = null;});

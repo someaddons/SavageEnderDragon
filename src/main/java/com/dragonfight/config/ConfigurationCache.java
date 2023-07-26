@@ -34,7 +34,7 @@ public class ConfigurationCache
                 }
 
                 final EntityType type = BuiltInRegistries.ENTITY_TYPE.get(id);
-                if (id.equals(BuiltInRegistries.ENTITY_TYPE.getDefaultKey()))
+                if (type.equals(BuiltInRegistries.ENTITY_TYPE.get(BuiltInRegistries.ENTITY_TYPE.getDefaultKey())))
                 {
                     DragonfightMod.LOGGER.error("Config entry could not be parsed, not a valid entity type" + entityString);
                     continue;
