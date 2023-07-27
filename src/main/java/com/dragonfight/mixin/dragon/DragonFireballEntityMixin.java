@@ -3,7 +3,7 @@ package com.dragonfight.mixin.dragon;
 import com.dragonfight.DragonfightMod;
 import net.minecraft.world.damagesource.EntityDamageSource;
 import net.minecraft.world.entity.projectile.DragonFireball;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.phys.HitResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,6 +29,6 @@ public class DragonFireballEntityMixin
           rayTraceResult.getLocation().z,
           1 + DragonfightMod.config.getCommonConfig().dragonDifficulty / 4f,
           false,
-          Level.ExplosionInteraction.NONE);
+          Explosion.BlockInteraction.NONE);
     }
 }
