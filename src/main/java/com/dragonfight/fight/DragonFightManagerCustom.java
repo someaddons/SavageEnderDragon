@@ -86,7 +86,7 @@ public class DragonFightManagerCustom
         // Spawn ground area effect making the player walk away
         areaeffectcloudentity.setParticle(ParticleTypes.DRAGON_BREATH);
         areaeffectcloudentity.setRadius(1.0F);
-        areaeffectcloudentity.setDuration((int) ((CRYSTAL_RESPAWN_TIME / getDifficulty()) * DragonfightMod.config.getCommonConfig().crystalRespawnTimeModifier.get()));
+        areaeffectcloudentity.setDuration((int) ((CRYSTAL_RESPAWN_TIME / getDifficulty()) * DragonfightMod.config.getCommonConfig().crystalRespawnTimeModifier));
         areaeffectcloudentity.setRadiusPerTick((5.0F - areaeffectcloudentity.getRadius()) / (float) areaeffectcloudentity.getDuration());
         areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.HARM, 100, 1));
         areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 100, 1));
@@ -102,7 +102,7 @@ public class DragonFightManagerCustom
         if (damageSource.getEntity().blockPosition().distSqr(enderCrystalEntity.blockPosition()) > LIGHTNING_DESTROY_RANGE)
         {
             // Hit player destroying the crystals from range with lightning
-            if (!DragonfightMod.config.getCommonConfig().disableLightning.get())
+            if (!DragonfightMod.config.getCommonConfig().disableLightning)
             {
                 LightningBolt lightningboltentity =
                   (LightningBolt) spawnEntity((ServerLevel) enderCrystalEntity.level(), EntityType.LIGHTNING_BOLT, damageSource.getEntity().position());
@@ -283,7 +283,7 @@ public class DragonFightManagerCustom
         }
 
         if (dragonEntity != null && advancingExplosionCurrent == 0 && advancingLightningCurrent == 0
-              && (dragonEntity.getHealth() / dragonEntity.getMaxHealth()) < (DragonfightMod.config.getCommonConfig().disableLightning.get() ? 0.5d : 0.20d))
+              && (dragonEntity.getHealth() / dragonEntity.getMaxHealth()) < (DragonfightMod.config.getCommonConfig().disableLightning ? 0.5d : 0.20d))
         {
             advancingExplosionCurrent = 8;
             advancingExplosionStop = 50;
@@ -545,7 +545,7 @@ public class DragonFightManagerCustom
             if (world.getEntitiesOfClass(EndCrystal.class, spike.getTopBoundingBox().move(0, addHeight, 0).inflate(5)).isEmpty())
             {
                 crystalRespawnPos = pos.offset(0, addHeight, 0);
-                crystalRespawnTimer = (int) Math.max(400, (CRYSTAL_RESPAWN_TIME / getDifficulty()) * DragonfightMod.config.getCommonConfig().crystalRespawnTimeModifier.get());
+                crystalRespawnTimer = (int) Math.max(400, (CRYSTAL_RESPAWN_TIME / getDifficulty()) * DragonfightMod.config.getCommonConfig().crystalRespawnTimeModifier);
                 notifyPlayer(world, "Adding respawn at :" + crystalRespawnPos + " in:" + crystalRespawnTimer);
                 break;
             }
@@ -561,7 +561,7 @@ public class DragonFightManagerCustom
      */
     private static void spawnLightningAtCircle(final BlockPos midPoint, final int radius, final Level world)
     {
-        if (DragonfightMod.config.getCommonConfig().disableLightning.get())
+        if (DragonfightMod.config.getCommonConfig().disableLightning)
         {
             return;
         }
@@ -628,7 +628,7 @@ public class DragonFightManagerCustom
     {
         Set<BlockPos> positions = new HashSet<>();
 
-        precision = (int) (precision / DragonfightMod.config.getCommonConfig().lightningExplosionDensity.get());
+        precision = (int) (precision / DragonfightMod.config.getCommonConfig().lightningExplosionDensity);
         final int randomOffset = DragonfightMod.rand.nextInt(40);
         for (int i = randomOffset; i < 360 + randomOffset; i += precision)
         {
@@ -649,7 +649,7 @@ public class DragonFightManagerCustom
      */
     public static void notifyPlayer(final Level world, final String message)
     {
-        if (DragonfightMod.config.getCommonConfig().printDragonPhases.get())
+        if (DragonfightMod.config.getCommonConfig().printDragonPhases)
         {
             for (final Player player : ((ServerLevel) world).players())
             {
@@ -668,7 +668,7 @@ public class DragonFightManagerCustom
      */
     private static int getDifficulty()
     {
-        int difficulty = DragonfightMod.config.getCommonConfig().dragonDifficulty.get();
+        int difficulty = DragonfightMod.config.getCommonConfig().dragonDifficulty;
 
         if (dragonEntity != null)
         {
