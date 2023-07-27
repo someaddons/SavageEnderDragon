@@ -27,7 +27,7 @@ public class DragonFireballEntityMixin
           rayTraceResult.getLocation().x,
           rayTraceResult.getLocation().y,
           rayTraceResult.getLocation().z,
-          1 + DragonfightMod.config.getCommonConfig().dragonDifficulty.get() / 4f,
+          1 + DragonfightMod.config.getCommonConfig().dragonDifficulty / 4f,
           false,
           Level.ExplosionInteraction.NONE);
     }

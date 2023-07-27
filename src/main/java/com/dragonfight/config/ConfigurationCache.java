@@ -1,27 +1,24 @@
-package com.dragonfight.event;
+package com.dragonfight.config;
 
 import com.dragonfight.DragonfightMod;
 import com.dragonfight.fight.DragonFightManagerCustom;
 import com.google.common.collect.ImmutableList;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 
-public class ModEventHandler
+public class ConfigurationCache
 {
-    @SubscribeEvent
-    public static void onConfigChanged(ModConfigEvent event)
+    public static void onConfigChanged()
     {
-        DragonFightManagerCustom.spawnOnCrystalDeath = parseEntityTypes(DragonfightMod.config.getCommonConfig().spawnoncrystaldestroy.get());
-        DragonFightManagerCustom.spawnOnCrystalRespawn = parseEntityTypes(DragonfightMod.config.getCommonConfig().spawnoncrystalrespawn.get());
-        DragonFightManagerCustom.spawnOnDragonSitting = parseEntityTypes(DragonfightMod.config.getCommonConfig().spawnwhilelanded.get());
+        DragonFightManagerCustom.spawnOnCrystalDeath = parseEntityTypes(DragonfightMod.config.getCommonConfig().spawnoncrystaldestroy);
+        DragonFightManagerCustom.spawnOnCrystalRespawn = parseEntityTypes(DragonfightMod.config.getCommonConfig().spawnoncrystalrespawn);
+        DragonFightManagerCustom.spawnOnDragonSitting = parseEntityTypes(DragonfightMod.config.getCommonConfig().spawnwhilelanded);
     }
 
-    private static ImmutableList<EntityType> parseEntityTypes(final List<? extends String> data)
+    private static ImmutableList<EntityType> parseEntityTypes(final List<String> data)
     {
         final ImmutableList.Builder<EntityType> builder = ImmutableList.builder();
         for (final String entry : data)
@@ -36,8 +33,8 @@ public class ModEventHandler
                     continue;
                 }
 
-                final EntityType type = ForgeRegistries.ENTITY_TYPES.getValue(id);
-                if (type == null)
+                final EntityType type = BuiltInRegistries.ENTITY_TYPE.get(id);
+                if (type.equals(BuiltInRegistries.ENTITY_TYPE.get(BuiltInRegistries.ENTITY_TYPE.getDefaultKey())))
                 {
                     DragonfightMod.LOGGER.error("Config entry could not be parsed, not a valid entity type" + entityString);
                     continue;
