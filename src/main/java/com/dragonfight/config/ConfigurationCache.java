@@ -3,9 +3,9 @@ package com.dragonfight.config;
 import com.dragonfight.DragonfightMod;
 import com.dragonfight.fight.DragonFightManagerCustom;
 import com.google.common.collect.ImmutableList;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 
@@ -33,8 +33,8 @@ public class ConfigurationCache
                     continue;
                 }
 
-                final EntityType type = BuiltInRegistries.ENTITY_TYPE.get(id);
-                if (type.equals(BuiltInRegistries.ENTITY_TYPE.get(BuiltInRegistries.ENTITY_TYPE.getDefaultKey())))
+                final EntityType type = ForgeRegistries.ENTITY_TYPES.getValue(id);
+                if (type.equals(ForgeRegistries.ENTITY_TYPES.getValue((ForgeRegistries.ENTITY_TYPES.getDefaultKey()))))
                 {
                     DragonfightMod.LOGGER.error("Config entry could not be parsed, not a valid entity type" + entityString);
                     continue;
