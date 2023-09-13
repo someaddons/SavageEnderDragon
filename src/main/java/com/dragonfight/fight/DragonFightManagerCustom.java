@@ -1,6 +1,8 @@
 package com.dragonfight.fight;
 
+import com.cupboard.util.BlockSearch;
 import com.dragonfight.DragonfightMod;
+import com.dragonfight.config.ConfigurationCache;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -40,9 +42,9 @@ import static net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE;
  */
 public class DragonFightManagerCustom
 {
-    public static ImmutableList<EntityType> spawnOnCrystalDeath   = ImmutableList.of();
-    public static ImmutableList<EntityType> spawnOnCrystalRespawn = ImmutableList.of();
-    public static ImmutableList<EntityType> spawnOnDragonSitting  = ImmutableList.of();
+    public static ImmutableList<ConfigurationCache.EntitySpawnData> spawnOnCrystalDeath   = ImmutableList.of();
+    public static ImmutableList<ConfigurationCache.EntitySpawnData> spawnOnCrystalRespawn = ImmutableList.of();
+    public static ImmutableList<ConfigurationCache.EntitySpawnData> spawnOnDragonSitting  = ImmutableList.of();
 
     private static final float    CRYSTAL_RESPAWN_TIME    = 8000;
     private static final int      LIGHTNING_DESTROY_RANGE = 10 * 10;
@@ -105,7 +107,9 @@ public class DragonFightManagerCustom
             if (!DragonfightMod.config.getCommonConfig().disableLightning)
             {
                 LightningBolt lightningboltentity =
-                  (LightningBolt) spawnEntity((ServerLevel) enderCrystalEntity.level(), EntityType.LIGHTNING_BOLT, damageSource.getEntity().position());
+                  (LightningBolt) spawnEntity((ServerLevel) enderCrystalEntity.level(),
+                    new ConfigurationCache.EntitySpawnData(EntityType.LIGHTNING_BOLT, null),
+                    damageSource.getEntity().position());
                 lightningboltentity.setVisualOnly(false);
                 enderCrystalEntity.level().addFreshEntity(lightningboltentity);
             }
@@ -115,9 +119,21 @@ public class DragonFightManagerCustom
                 // Spawn phantoms aggrod to the player
                 for (int i = 0; i < Math.max(1, getDifficulty() / 4); i++)
                 {
+                    BlockPos searchedPos = BlockSearch.findAround((ServerLevel) enderCrystalEntity.level(),
+                      damageSource.getEntity().blockPosition().offset(i + 1, 5, i + 1),
+                      15,
+                      15,
+                      1,
+                      (level, checkPos) -> level.getBlockState(checkPos).isAir() && level.getBlockState(checkPos.above()).isAir());
+
+                    if (searchedPos == null)
+                    {
+                        searchedPos = damageSource.getEntity().blockPosition();
+                    }
+
                     final LivingEntity entity = (LivingEntity) spawnEntity((ServerLevel) enderCrystalEntity.level(),
                       spawnOnCrystalDeath.get(DragonfightMod.rand.nextInt(spawnOnCrystalDeath.size())),
-                      createVec3(damageSource.getEntity().blockPosition()).add(0, 5, 0));
+                      createVec3(searchedPos));
                     if (entity instanceof Mob)
                     {
                         ((Mob) entity).setTarget((LivingEntity) damageSource.getEntity());
@@ -359,8 +375,20 @@ public class DragonFightManagerCustom
             return;
         }
 
+        BlockPos searchedPos = BlockSearch.findAround((ServerLevel) world,
+          spawnPos,
+          30,
+          30,
+          1,
+          (level, checkPos) -> level.getBlockState(checkPos).isAir() && level.getBlockState(checkPos.above()).isAir() && level.getBlockState(checkPos.below())
+            .isSolid());
+        if (searchedPos == null)
+        {
+            searchedPos = spawnPos;
+        }
+
         final LivingEntity entity =
-          (LivingEntity) spawnEntity((ServerLevel) world, spawnOnDragonSitting.get(DragonfightMod.rand.nextInt(spawnOnDragonSitting.size())), createVec3(spawnPos));
+          (LivingEntity) spawnEntity((ServerLevel) world, spawnOnDragonSitting.get(DragonfightMod.rand.nextInt(spawnOnDragonSitting.size())), createVec3(searchedPos));
 
         if (entity instanceof Mob)
         {
@@ -393,7 +421,7 @@ public class DragonFightManagerCustom
         if (world.getEntitiesOfClass(EndCrystal.class, new AABB(pos).inflate(2)).isEmpty())
         {
             // Respawn crystal
-            final EndCrystal crystal = (EndCrystal) spawnEntity((ServerLevel) world, EntityType.END_CRYSTAL, createVec3(pos));
+            final EndCrystal crystal = (EndCrystal) spawnEntity((ServerLevel) world, new ConfigurationCache.EntitySpawnData(EntityType.END_CRYSTAL, null), createVec3(pos));
             final Vec3 spawnPos = createVec3(new BlockPos((int) (pos.getX() * 0.8), pos.getY(), (int) (pos.getZ() * 0.8)));
 
             if (!spawnOnCrystalRespawn.isEmpty())
@@ -687,10 +715,16 @@ public class DragonFightManagerCustom
         return new Vec3(pos.getX(), pos.getY(), pos.getZ());
     }
 
-    private static Entity spawnEntity(final ServerLevel world, EntityType entityType, Vec3 pos)
+    private static Entity spawnEntity(final ServerLevel world, ConfigurationCache.EntitySpawnData spawnData, Vec3 pos)
     {
         CompoundTag compoundtag = new CompoundTag();
-        compoundtag.putString("id", ForgeRegistries.ENTITY_TYPES.getKey(entityType).toString());
+
+        if (spawnData.nbt != null)
+        {
+            compoundtag = spawnData.nbt.copy();
+        }
+
+        compoundtag.putString("id", ForgeRegistries.ENTITY_TYPES.getKey(spawnData.type).toString());
         Entity entity = EntityType.loadEntityRecursive(compoundtag, world, (p_138828_) -> {
 
             final double offset = pos.x % 1d != 0d || pos.z % 1d != 0d ? 0 : 0.5;
@@ -698,6 +732,13 @@ public class DragonFightManagerCustom
             p_138828_.moveTo(pos.x + offset, pos.y, pos.z + offset, p_138828_.getYRot(), p_138828_.getXRot());
             return p_138828_;
         });
+
+        if (entity == null)
+        {
+            return null;
+        }
+
+        entity.setUUID(UUID.randomUUID());
 
         if (entity instanceof Mob)
         {
