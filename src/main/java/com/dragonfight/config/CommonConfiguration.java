@@ -62,6 +62,9 @@ public class CommonConfiguration implements ICommonConfig
         entry3.addProperty("disableDragonAreaSpawns", disableDragonAreaSpawns);
         root.add("disableDragonAreaSpawns", entry3);
 
+        root.addProperty("descSpawnEntries",
+          "Below are configuration options for entity spawning, when trying to use nbt append it right after the entity type, e.g. minecraft:zombie{}. Put a backslash in front of all quotation marks");
+
         final JsonObject entry4 = new JsonObject();
         entry4.addProperty("desc:",
           "List of mobs spawning when a crystal is destroyed at range, intended to be flying or ranged to close the gap: e.g. format :  [\"minecraft:zombie\", \"minecraft:creeper\"]");
