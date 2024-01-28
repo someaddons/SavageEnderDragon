@@ -5,6 +5,7 @@
   "mixins": [
     "dragon.CrystalRespawnMixin",
     "dragon.DragonFireballEntityMixin",
+    "dragon.DragonXPMixin",
     "dragon.EndDragonFightMixin",
     "dragon.EnderDragonEntityMixin",
     "dragon.LightningBoldSoundMixin",
