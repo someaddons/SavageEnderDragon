@@ -16,10 +16,16 @@ public class CommonConfiguration implements ICommonConfig
     public boolean      disableDragonAreaSpawns    = true;
     public List<String> spawnoncrystaldestroy      = Lists.newArrayList("minecraft:phantom");
     public List<String> spawnoncrystalrespawn      = Lists.newArrayList("minecraft:blaze");
+    public List<String> crystalPendingRespawns     = Lists.newArrayList();
     public List<String> spawnwhilelanded           = Lists.newArrayList("minecraft:enderman");
     public double       crystalRespawnTimeModifier = 1.0;
     public double       lightningExplosionDensity  = 1.0;
     public boolean      disableLightning           = false;
+    public boolean      antiflightAbility          = true;
+    public double       dragonHealthModifier       = 1.0;
+    public double       dragonDamageModifier       = 1.0;
+    public double       mobSpawnAmountModifier     = 1.0;
+    public double       dragonXPModifier           = 1.0;
 
     public CommonConfiguration()
     {
@@ -51,6 +57,30 @@ public class CommonConfiguration implements ICommonConfig
         entry10.addProperty("disableLightning", disableLightning);
         root.add("disableLightning", entry10);
 
+        final JsonObject entry15 = new JsonObject();
+        entry15.addProperty("desc:", "Enables anti-flight ability: default:true");
+        entry15.addProperty("antiflightAbility", antiflightAbility);
+        root.add("antiflightAbility", entry15);
+
+        final JsonObject entry16 = new JsonObject();
+        entry16.addProperty("desc:", "Sets the dragon health modifier: default:1.0");
+        entry16.addProperty("dragonHealthModifier", dragonHealthModifier);
+        root.add("dragonHealthModifier", entry16);
+
+        final JsonObject entry17 = new JsonObject();
+        entry17.addProperty("desc:", "Sets the dragon damage modifier: default:1.0");
+        entry17.addProperty("dragonDamageModifier", dragonDamageModifier);
+        root.add("dragonDamageModifier", entry17);
+
+        final JsonObject entry18 = new JsonObject();
+        entry18.addProperty("desc:", "Sets the mob spawn amount modifier: default:1.0");
+        entry18.addProperty("mobSpawnAmountModifier", mobSpawnAmountModifier);
+        root.add("mobSpawnAmountModifier", entry18);
+
+        final JsonObject entry20 = new JsonObject();
+        entry20.addProperty("desc:", "Sets the XP drop modifier: default:1.0");
+        entry20.addProperty("dragonXPModifier", dragonXPModifier);
+        root.add("dragonXPModifier", entry20);
 
         final JsonObject entry2 = new JsonObject();
         entry2.addProperty("desc:", "Prints the dragon phase in chat if enabled: default:false");
@@ -98,6 +128,16 @@ public class CommonConfiguration implements ICommonConfig
         entry6.add("spawnwhilelanded", list6);
         root.add("spawnwhilelanded", entry6);
 
+        final JsonObject entry19 = new JsonObject();
+        entry19.addProperty("desc:",
+          "List of crystal respawn locations for the end crystals, filled automatically on destroy recommended to not touch. XYZ coords seperated by semicolon");
+        final JsonArray list19 = new JsonArray();
+        for (final String name : crystalPendingRespawns)
+        {
+            list19.add(name);
+        }
+        entry19.add("crystalPendingRespawns", list19);
+        root.add("crystalPendingRespawns", entry19);
 
         return root;
     }
@@ -107,7 +147,12 @@ public class CommonConfiguration implements ICommonConfig
         dragonDifficulty = data.get("dragonDifficulty").getAsJsonObject().get("dragonDifficulty").getAsInt();
         crystalRespawnTimeModifier = data.get("crystalRespawnTimeModifier").getAsJsonObject().get("crystalRespawnTimeModifier").getAsDouble();
         lightningExplosionDensity = data.get("lightningExplosionDensity").getAsJsonObject().get("lightningExplosionDensity").getAsDouble();
+        dragonHealthModifier = data.get("dragonHealthModifier").getAsJsonObject().get("dragonHealthModifier").getAsDouble();
+        dragonDamageModifier = data.get("dragonDamageModifier").getAsJsonObject().get("dragonDamageModifier").getAsDouble();
+        dragonXPModifier = data.get("dragonXPModifier").getAsJsonObject().get("dragonXPModifier").getAsDouble();
+        mobSpawnAmountModifier = data.get("mobSpawnAmountModifier").getAsJsonObject().get("mobSpawnAmountModifier").getAsDouble();
         printDragonPhases = data.get("printDragonPhases").getAsJsonObject().get("printDragonPhases").getAsBoolean();
+        antiflightAbility = data.get("antiflightAbility").getAsJsonObject().get("antiflightAbility").getAsBoolean();
         disableLightning = data.get("disableLightning").getAsJsonObject().get("disableLightning").getAsBoolean();
         disableDragonAreaSpawns = data.get("disableDragonAreaSpawns").getAsJsonObject().get("disableDragonAreaSpawns").getAsBoolean();
         spawnoncrystaldestroy = new ArrayList<>();
@@ -126,6 +171,13 @@ public class CommonConfiguration implements ICommonConfig
         {
             spawnwhilelanded.add(element.getAsString());
         }
+
+        crystalPendingRespawns = new ArrayList<>();
+        for (final JsonElement element : data.get("crystalPendingRespawns").getAsJsonObject().get("crystalPendingRespawns").getAsJsonArray())
+        {
+            crystalPendingRespawns.add(element.getAsString());
+        }
+
 
         ConfigurationCache.onConfigChanged();
     }
