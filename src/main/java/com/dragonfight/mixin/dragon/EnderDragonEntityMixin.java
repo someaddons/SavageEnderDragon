@@ -8,9 +8,7 @@ import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -34,17 +32,5 @@ public class EnderDragonEntityMixin
         {
             cir.setReturnValue(false);
         }
-    }
-
-    @ModifyConstant(method = "hurt(Ljava/util/List;)V", constant = @Constant(floatValue = 10.0F))
-    private float onAttackPlayers(float damage)
-    {
-        return DragonFightManagerCustom.onAttackPlayer(damage);
-    }
-
-    @ModifyConstant(method = "knockBack", constant = @Constant(floatValue = 5.0F))
-    private float onKnockbackPlayers(float damage)
-    {
-        return DragonFightManagerCustom.onAttackPlayer(damage);
     }
 }
