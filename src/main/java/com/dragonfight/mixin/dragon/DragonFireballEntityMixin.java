@@ -1,6 +1,6 @@
 package com.dragonfight.mixin.dragon;
 
-import com.dragonfight.DragonfightMod;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.DragonFireball;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
@@ -21,12 +21,12 @@ public class DragonFireballEntityMixin
     private void onHit(final HitResult rayTraceResult, final CallbackInfo ci)
     {
         self.level().explode(null,
-          self.damageSources().mobProjectile(self, null),
+          self.damageSources().mobProjectile(self, (LivingEntity) self.getOwner()),
           null,
           rayTraceResult.getLocation().x,
           rayTraceResult.getLocation().y,
           rayTraceResult.getLocation().z,
-          1 + DragonfightMod.config.getCommonConfig().dragonDifficulty / 4f,
+          0.5f,
           false,
           Level.ExplosionInteraction.NONE);
     }

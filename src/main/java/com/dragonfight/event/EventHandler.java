@@ -10,6 +10,7 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -71,6 +72,15 @@ public class EventHandler
         if (event.getEntity() instanceof EnderDragon)
         {
             event.setDroppedExperience((int) (event.getDroppedExperience() * DragonfightMod.config.getCommonConfig().dragonXPModifier));
+        }
+    }
+
+    @SubscribeEvent
+    public static void onHurt(final LivingHurtEvent event)
+    {
+        if (event.getSource().getEntity() instanceof EnderDragon)
+        {
+            event.setAmount(DragonFightManagerCustom.onAttackPlayer(event.getAmount()));
         }
     }
 }
