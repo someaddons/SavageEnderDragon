@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "dragon.CrystalRespawnMixin",
+    "dragon.DragonDamageMixin",
     "dragon.DragonFireballEntityMixin",
     "dragon.DragonXPMixin",
     "dragon.EndDragonFightMixin",
