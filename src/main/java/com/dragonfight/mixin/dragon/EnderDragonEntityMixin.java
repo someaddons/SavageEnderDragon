@@ -6,20 +6,15 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(EnderDragon.class)
 public class EnderDragonEntityMixin
 {
-    @Shadow
-    public boolean     inWall;
-    final  EnderDragon self = (EnderDragon) (Object) this;
+    final EnderDragon self = (EnderDragon) (Object) this;
 
     @Inject(method = "checkCrystals", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/boss/enderdragon/EnderDragon;setHealth(F)V"))
     private void onDragonHeal(final CallbackInfo ci)
@@ -34,17 +29,5 @@ public class EnderDragonEntityMixin
         {
             cir.setReturnValue(false);
         }
-    }
-
-    @ModifyConstant(method = "hurt(Ljava/util/List;)V", constant = @Constant(floatValue = 10.0F))
-    private float onAttackPlayers(float damage)
-    {
-        return DragonFightManagerCustom.onAttackPlayer(damage);
-    }
-
-    @ModifyConstant(method = "knockBack", constant = @Constant(floatValue = 5.0F))
-    private float onKnockbackPlayers(float damage)
-    {
-        return DragonFightManagerCustom.onAttackPlayer(damage);
     }
 }
