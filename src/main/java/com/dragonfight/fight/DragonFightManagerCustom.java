@@ -119,7 +119,7 @@ public class DragonFightManagerCustom
                 // Spawn phantoms aggrod to the player
                 for (int i = 0; i < Math.max(1, (getDifficulty() / 4d) * DragonfightMod.config.getCommonConfig().mobSpawnAmountModifier); i++)
                 {
-                    BlockPos searchedPos = BlockSearch.findAround((ServerLevel) enderCrystalEntity.level(),
+                    BlockPos searchedPos = BlockSearch.findAround(enderCrystalEntity.level(),
                       damageSource.getEntity().blockPosition().offset(i + 1, 5, i + 1),
                       15,
                       15,
@@ -428,7 +428,7 @@ public class DragonFightManagerCustom
             return;
         }
 
-        BlockPos searchedPos = BlockSearch.findAround((ServerLevel) world,
+        BlockPos searchedPos = BlockSearch.findAround(world,
           spawnPos,
           30,
           30,
