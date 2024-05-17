@@ -482,15 +482,18 @@ public class DragonFightManagerCustom
             final EndCrystal crystal = (EndCrystal) spawnEntity((ServerLevel) world, new ConfigurationCache.EntitySpawnData(EntityType.END_CRYSTAL, null), createVec3(pos));
             final Vec3 spawnPos = createVec3(new BlockPos((int) (pos.getX() * 0.8), pos.getY(), (int) (pos.getZ() * 0.8)));
 
-            for (int i = 0; i < Math.max(1, (getDifficulty() / 3d) * DragonfightMod.config.getCommonConfig().mobSpawnAmountModifier); i++)
+            if (!spawnOnCrystalRespawn.isEmpty())
             {
-                // Spawn blaze on respawn
-                final LivingEntity entity =
-                  (LivingEntity) spawnEntity((ServerLevel) world, spawnOnCrystalRespawn.get(DragonfightMod.rand.nextInt(spawnOnCrystalRespawn.size())), spawnPos);
-
-                if (entity instanceof Mob)
+                for (int i = 0; i < Math.max(1, (getDifficulty() / 3d) * DragonfightMod.config.getCommonConfig().mobSpawnAmountModifier); i++)
                 {
-                    ((Mob) entity).setTarget(world.getNearestPlayer(entity, 100));
+                    // Spawn blaze on respawn
+                    final LivingEntity entity =
+                      (LivingEntity) spawnEntity((ServerLevel) world, spawnOnCrystalRespawn.get(DragonfightMod.rand.nextInt(spawnOnCrystalRespawn.size())), spawnPos);
+
+                    if (entity instanceof Mob)
+                    {
+                        ((Mob) entity).setTarget(world.getNearestPlayer(entity, 100));
+                    }
                 }
             }
 
