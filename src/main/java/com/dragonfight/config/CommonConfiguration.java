@@ -16,7 +16,6 @@ public class CommonConfiguration implements ICommonConfig
     public boolean      disableDragonAreaSpawns    = true;
     public List<String> spawnoncrystaldestroy      = Lists.newArrayList("minecraft:phantom");
     public List<String> spawnoncrystalrespawn      = Lists.newArrayList("minecraft:blaze");
-    public List<String> crystalPendingRespawns     = Lists.newArrayList();
     public List<String> spawnwhilelanded           = Lists.newArrayList("minecraft:enderman");
     public double       crystalRespawnTimeModifier = 1.0;
     public double       lightningExplosionDensity  = 1.0;
@@ -128,17 +127,6 @@ public class CommonConfiguration implements ICommonConfig
         entry6.add("spawnwhilelanded", list6);
         root.add("spawnwhilelanded", entry6);
 
-        final JsonObject entry19 = new JsonObject();
-        entry19.addProperty("desc:",
-          "List of crystal respawn locations for the end crystals, filled automatically on destroy recommended to not touch. XYZ coords seperated by semicolon");
-        final JsonArray list19 = new JsonArray();
-        for (final String name : crystalPendingRespawns)
-        {
-            list19.add(name);
-        }
-        entry19.add("crystalPendingRespawns", list19);
-        root.add("crystalPendingRespawns", entry19);
-
         return root;
     }
 
@@ -171,13 +159,6 @@ public class CommonConfiguration implements ICommonConfig
         {
             spawnwhilelanded.add(element.getAsString());
         }
-
-        crystalPendingRespawns = new ArrayList<>();
-        for (final JsonElement element : data.get("crystalPendingRespawns").getAsJsonObject().get("crystalPendingRespawns").getAsJsonArray())
-        {
-            crystalPendingRespawns.add(element.getAsString());
-        }
-
 
         ConfigurationCache.onConfigChanged();
     }

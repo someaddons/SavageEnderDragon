@@ -50,7 +50,7 @@ public class DragonFightManagerCustom
     private static       BlockPos crystalRespawnPos       = null;
     private static       int      crystalRespawnTimer     = 0;
 
-    private static int               timeSinceLastLanding = 0;
+    private static int timeSinceLastLanding = 0;
 
     /**
      * ^^ Add counters
@@ -168,32 +168,21 @@ public class DragonFightManagerCustom
             return;
         }
 
-        final Set<BlockPos> existing = getCrystalRespawnPositions();
-        if (!existing.contains(position))
-        {
-            DragonfightMod.config.getCommonConfig().crystalPendingRespawns.add(position.getX() + ";" + position.getY() + ";" + position.getZ());
-            DragonfightMod.config.save();
-        }
+        CrystalLevelData.getForLevel((ServerLevel) dragonEntity.level()).addPosition(position);
     }
 
-    private static Set<BlockPos> getCrystalRespawnPositions()
+    private static Set<BlockPos> getCrystalRespawnPositions(final ServerLevel level)
     {
         final Set<BlockPos> existing = new HashSet<>();
 
-        for (final String data : DragonfightMod.config.getCommonConfig().crystalPendingRespawns)
+        for (final BlockPos pos : CrystalLevelData.getForLevel(level).getCrystalPendingRespawns())
         {
-            String[] dataArray = data.split(";");
-            if (dataArray != null && dataArray.length == 3)
+            if (dragonEntity != null && Math.sqrt(dragonEntity.blockPosition().distSqr(pos)) > 1000)
             {
-                final BlockPos pos = new BlockPos(Integer.parseInt(dataArray[0]), Integer.parseInt(dataArray[1]), Integer.parseInt(dataArray[2]));
-
-                if (dragonEntity != null && Math.sqrt(dragonEntity.blockPosition().distSqr(pos)) > 1000)
-                {
-                    continue;
-                }
-
-                existing.add(pos);
+                continue;
             }
+
+            existing.add(pos);
         }
 
         return existing;
@@ -434,7 +423,7 @@ public class DragonFightManagerCustom
           30,
           1,
           (level, checkPos) -> level.getBlockState(checkPos).isAir() && level.getBlockState(checkPos.above()).isAir() && level.getBlockState(checkPos.below())
-            .isSolid());
+                                                                                                                           .isSolid());
         if (searchedPos == null)
         {
             searchedPos = spawnPos;
@@ -503,6 +492,7 @@ public class DragonFightManagerCustom
             world.addParticle(ParticleTypes.EXPLOSION_EMITTER, crystal.getX() + (double) f, crystal.getY() + 2.0D + (double) f1, crystal.getZ() + (double) f2, 0.0D, 0.0D, 0.0D);
         }
 
+        CrystalLevelData.getForLevel((ServerLevel) world).removePosition(crystalRespawnPos);
         crystalRespawnPos = null;
         checkCrystalsToRespawn(world);
     }
@@ -609,7 +599,7 @@ public class DragonFightManagerCustom
             return;
         }
 
-        final List<BlockPos> positions = new ArrayList<>(getCrystalRespawnPositions());
+        final List<BlockPos> positions = new ArrayList<>(getCrystalRespawnPositions((ServerLevel) world));
         Collections.shuffle(positions);
         for (final BlockPos pos : positions)
         {
