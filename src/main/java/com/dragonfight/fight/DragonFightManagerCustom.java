@@ -6,8 +6,10 @@ import com.dragonfight.config.ConfigurationCache;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
@@ -29,8 +31,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.server.ServerLifecycleHooks;
 
 import java.util.*;
 
@@ -71,8 +71,10 @@ public class DragonFightManagerCustom
 
     public static boolean isFightRunning = true;
 
-    public static  AttributeModifier AA_GRAVITY_MOD = new AttributeModifier("fall", 5.0, AttributeModifier.Operation.ADDITION);
-    private static AttributeModifier MAX_HP_MOD     = new AttributeModifier("dragonhp", 1.0, AttributeModifier.Operation.MULTIPLY_TOTAL);
+    final static   ResourceLocation  GRAVITY_MOD_ID = DragonfightMod.id("fall");
+    final static   ResourceLocation  HP_MOD_ID      = DragonfightMod.id("dragonhp");
+    public static  AttributeModifier AA_GRAVITY_MOD = new AttributeModifier(GRAVITY_MOD_ID, 5.0, AttributeModifier.Operation.ADD_VALUE);
+    private static AttributeModifier MAX_HP_MOD     = new AttributeModifier(HP_MOD_ID, 1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 
     public static void onCrystalDeath(final EndCrystal enderCrystalEntity, final DamageSource damageSource)
     {
@@ -285,14 +287,14 @@ public class DragonFightManagerCustom
                 {
                     if (time == 300)
                     {
-                        player.getAttribute(net.minecraftforge.common.ForgeMod.ENTITY_GRAVITY.get()).addTransientModifier(AA_GRAVITY_MOD);
+                        player.getAttribute(Attributes.GRAVITY).addTransientModifier(AA_GRAVITY_MOD);
                         flyingPlayers.put(player.getUUID(), ++time);
                     }
                     else if (time > 400)
                     {
                         player.hurt(dragonEntity.damageSources().fall(), player.getMaxHealth() * 0.9f);
                         player.setHealth(1);
-                        player.getAttribute(net.minecraftforge.common.ForgeMod.ENTITY_GRAVITY.get()).removeModifier(AA_GRAVITY_MOD);
+                        player.getAttribute(Attributes.GRAVITY).removeModifier(AA_GRAVITY_MOD);
                         flyingPlayers.put(player.getUUID(), 0);
                     }
                     else
@@ -300,7 +302,7 @@ public class DragonFightManagerCustom
                         // Remove if falling didnt happen properly after 5s
                         if (time == 100)
                         {
-                            player.getAttribute(net.minecraftforge.common.ForgeMod.ENTITY_GRAVITY.get()).removeModifier(AA_GRAVITY_MOD);
+                            player.getAttribute(Attributes.GRAVITY).removeModifier(AA_GRAVITY_MOD);
                         }
 
                         flyingPlayers.put(player.getUUID(), ++time);
@@ -312,7 +314,7 @@ public class DragonFightManagerCustom
                     {
                         player.hurt(dragonEntity.damageSources().fall(), player.getMaxHealth() * 0.9f);
                         player.setHealth(1);
-                        player.getAttribute(net.minecraftforge.common.ForgeMod.ENTITY_GRAVITY.get()).removeModifier(AA_GRAVITY_MOD);
+                        player.getAttribute(Attributes.GRAVITY).removeModifier(AA_GRAVITY_MOD);
                     }
                     flyingPlayers.put(player.getUUID(), 0);
                 }
@@ -365,14 +367,14 @@ public class DragonFightManagerCustom
     {
         final double pct = dragonEntity.getHealth() / dragonEntity.getMaxHealth();
 
-        if (dragonEntity.getAttribute(Attributes.MAX_HEALTH).hasModifier(MAX_HP_MOD))
+        if (dragonEntity.getAttribute(Attributes.MAX_HEALTH).hasModifier(HP_MOD_ID))
         {
-            dragonEntity.getAttribute(Attributes.MAX_HEALTH).removeModifier(MAX_HP_MOD);
+            dragonEntity.getAttribute(Attributes.MAX_HEALTH).removeModifier(HP_MOD_ID);
         }
 
-        MAX_HP_MOD = new AttributeModifier("dragonhp",
+        MAX_HP_MOD = new AttributeModifier(HP_MOD_ID,
           (Math.max(1, getDifficulty() / 5) * DragonfightMod.config.getCommonConfig().dragonHealthModifier),
-          AttributeModifier.Operation.MULTIPLY_TOTAL);
+          AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 
         dragonEntity.getAttribute(Attributes.MAX_HEALTH).addTransientModifier(MAX_HP_MOD);
         dragonEntity.setHealth((float) (dragonEntity.getMaxHealth() * pct));
@@ -402,12 +404,15 @@ public class DragonFightManagerCustom
             living.remove(Entity.RemovalReason.DISCARDED);
         }
 
-        for (final UUID playerUUID : flyingPlayers.keySet())
+        if (dragonEntity != null)
         {
-            final Player player = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayer(playerUUID);
-            if (player != null)
+            for (final UUID playerUUID : flyingPlayers.keySet())
             {
-                player.getAttribute(net.minecraftforge.common.ForgeMod.ENTITY_GRAVITY.get()).removeModifier(AA_GRAVITY_MOD);
+                final Player player = dragonEntity.level().getServer().getPlayerList().getPlayer(playerUUID);
+                if (player != null)
+                {
+                    player.getAttribute(Attributes.GRAVITY).removeModifier(AA_GRAVITY_MOD);
+                }
             }
         }
         flyingPlayers.clear();
@@ -766,7 +771,7 @@ public class DragonFightManagerCustom
             compoundtag = spawnData.nbt.copy();
         }
 
-        compoundtag.putString("id", ForgeRegistries.ENTITY_TYPES.getKey(spawnData.type).toString());
+        compoundtag.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(spawnData.type).toString());
         Entity entity = EntityType.loadEntityRecursive(compoundtag, world, (p_138828_) -> {
 
             final double offset = pos.x % 1d != 0d || pos.z % 1d != 0d ? 0 : 0.5;
@@ -784,7 +789,7 @@ public class DragonFightManagerCustom
 
         if (entity instanceof Mob)
         {
-            ((Mob) entity).finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.COMMAND, (SpawnGroupData) null, (CompoundTag) null);
+            ((Mob) entity).finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.COMMAND, (SpawnGroupData) null);
         }
 
         world.addFreshEntity(entity);

@@ -7,13 +7,14 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.living.MobSpawnEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingExperienceDropEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 /**
  * Handler to catch server tick events
@@ -21,11 +22,11 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 public class EventHandler
 {
     @SubscribeEvent
-    public static void onWorldTick(final TickEvent.LevelTickEvent event)
+    public static void onWorldTick(final LevelTickEvent.Post event)
     {
-        if (!event.level.isClientSide && event.level.dimension() == Level.END)
+        if (!event.getLevel().isClientSide && event.getLevel().dimension() == Level.END)
         {
-            DragonFightManagerCustom.onWorldTick(event.level);
+            DragonFightManagerCustom.onWorldTick(event.getLevel());
         }
     }
 
@@ -42,7 +43,7 @@ public class EventHandler
     }
 
     @SubscribeEvent
-    public static void onLivingSpawn(final MobSpawnEvent.FinalizeSpawn event)
+    public static void onLivingSpawn(final FinalizeSpawnEvent event)
     {
         /**
          * Disable entity spawn for the dragon fight
@@ -57,12 +58,12 @@ public class EventHandler
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void onPlayerTick(final TickEvent.PlayerTickEvent playerTickEvent)
+    public static void onPlayerTick(final PlayerTickEvent.Post playerTickEvent)
     {
-        final Integer flyTime = DragonFightManagerCustom.flyingPlayers.get(playerTickEvent.player.getUUID());
-        if (flyTime != null && !playerTickEvent.player.isCreative())
+        final Integer flyTime = DragonFightManagerCustom.flyingPlayers.get(playerTickEvent.getEntity().getUUID());
+        if (flyTime != null && !playerTickEvent.getEntity().isCreative())
         {
-            playerTickEvent.player.getAbilities().flying = false;
+            playerTickEvent.getEntity().getAbilities().flying = false;
         }
     }
 
@@ -76,11 +77,11 @@ public class EventHandler
     }
 
     @SubscribeEvent
-    public static void onHurt(final LivingHurtEvent event)
+    public static void onHurt(final LivingDamageEvent.Pre event)
     {
         if (event.getSource().getEntity() instanceof EnderDragon)
         {
-            event.setAmount(DragonFightManagerCustom.onAttackPlayer(event.getAmount()));
+            event.setNewDamage(DragonFightManagerCustom.onAttackPlayer(event.getNewDamage()));
         }
     }
 }
