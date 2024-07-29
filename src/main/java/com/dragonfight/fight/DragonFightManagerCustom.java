@@ -9,6 +9,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
@@ -70,8 +71,10 @@ public class DragonFightManagerCustom
 
     public static boolean isFightRunning = true;
 
-    public static  AttributeModifier AA_GRAVITY_MOD = new AttributeModifier("fall", 5.0, AttributeModifier.Operation.ADDITION);
-    private static AttributeModifier MAX_HP_MOD     = new AttributeModifier("dragonhp", 1.0, AttributeModifier.Operation.MULTIPLY_TOTAL);
+    final static   ResourceLocation  GRAVITY_MOD_ID = DragonfightMod.id("fall");
+    final static   ResourceLocation  HP_MOD_ID      = DragonfightMod.id("dragonhp");
+    public static  AttributeModifier AA_GRAVITY_MOD = new AttributeModifier(GRAVITY_MOD_ID, 5.0, AttributeModifier.Operation.ADD_VALUE);
+    private static AttributeModifier MAX_HP_MOD     = new AttributeModifier(HP_MOD_ID, 1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 
     public static void onCrystalDeath(final EndCrystal enderCrystalEntity, final DamageSource damageSource)
     {
@@ -355,14 +358,14 @@ public class DragonFightManagerCustom
     {
         final double pct = dragonEntity.getHealth() / dragonEntity.getMaxHealth();
 
-        if (dragonEntity.getAttribute(Attributes.MAX_HEALTH).hasModifier(MAX_HP_MOD))
+        if (dragonEntity.getAttribute(Attributes.MAX_HEALTH).hasModifier(HP_MOD_ID))
         {
-            dragonEntity.getAttribute(Attributes.MAX_HEALTH).removeModifier(MAX_HP_MOD);
+            dragonEntity.getAttribute(Attributes.MAX_HEALTH).removeModifier(HP_MOD_ID);
         }
 
-        MAX_HP_MOD = new AttributeModifier("dragonhp",
+        MAX_HP_MOD = new AttributeModifier(HP_MOD_ID,
           (Math.max(1, getDifficulty() / 5) * DragonfightMod.config.getCommonConfig().dragonHealthModifier),
-          AttributeModifier.Operation.MULTIPLY_TOTAL);
+          AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 
         dragonEntity.getAttribute(Attributes.MAX_HEALTH).addTransientModifier(MAX_HP_MOD);
         dragonEntity.setHealth((float) (dragonEntity.getMaxHealth() * pct));
@@ -775,7 +778,7 @@ public class DragonFightManagerCustom
 
         if (entity instanceof Mob)
         {
-            ((Mob) entity).finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.COMMAND, (SpawnGroupData) null, (CompoundTag) null);
+            ((Mob) entity).finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.COMMAND, (SpawnGroupData) null);
         }
 
         world.addFreshEntity(entity);

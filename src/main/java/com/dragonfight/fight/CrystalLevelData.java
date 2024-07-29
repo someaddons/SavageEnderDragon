@@ -1,10 +1,12 @@
 package com.dragonfight.fight;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
 
 import java.util.HashSet;
@@ -14,7 +16,7 @@ public class CrystalLevelData extends SavedData
 {
     public static final String ID = "dragonfight";
 
-    private Set<BlockPos> crystalPendingRespawns = new HashSet<>();
+    private final Set<BlockPos> crystalPendingRespawns = new HashSet<>();
 
     public CrystalLevelData()
     {
@@ -42,7 +44,7 @@ public class CrystalLevelData extends SavedData
     }
 
     @Override
-    public CompoundTag save(CompoundTag nbt)
+    public CompoundTag save(CompoundTag nbt, HolderLookup.Provider provider)
     {
         ListTag list = new ListTag();
         for (final BlockPos data : crystalPendingRespawns)
@@ -79,6 +81,6 @@ public class CrystalLevelData extends SavedData
 
     public static CrystalLevelData getForLevel(final ServerLevel level)
     {
-        return level.getDataStorage().computeIfAbsent(CrystalLevelData::load, CrystalLevelData::new, CrystalLevelData.ID);
+        return level.getDataStorage().computeIfAbsent(new Factory<>(CrystalLevelData::new, (nbt, provider) -> load(nbt), DataFixTypes.LEVEL), CrystalLevelData.ID);
     }
 }

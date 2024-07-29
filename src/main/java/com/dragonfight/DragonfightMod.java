@@ -6,6 +6,7 @@ import com.dragonfight.event.EventHandler;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,5 +32,10 @@ public class DragonfightMod implements ModInitializer
         ServerTickEvents.END_WORLD_TICK.register(EventHandler::onWorldTick);
         ServerLifecycleEvents.SERVER_STARTING.register(tserver -> {server = tserver;});
         ServerLifecycleEvents.SERVER_STOPPING.register(tserver -> {server = null;});
+    }
+
+    public static ResourceLocation id(final String id)
+    {
+        return ResourceLocation.fromNamespaceAndPath(MODID, id);
     }
 }
