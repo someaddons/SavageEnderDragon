@@ -287,16 +287,24 @@ public class DragonFightManagerCustom
                 {
                     if (time == 300)
                     {
+                        player.getAttribute(Attributes.GRAVITY).addTransientModifier(AA_GRAVITY_MOD);
                         flyingPlayers.put(player.getUUID(), ++time);
                     }
                     else if (time > 400)
                     {
                         player.hurt(dragonEntity.damageSources().fall(), player.getMaxHealth() * 0.9f);
                         player.setHealth(1);
+                        player.getAttribute(Attributes.GRAVITY).removeModifier(AA_GRAVITY_MOD);
                         flyingPlayers.put(player.getUUID(), 0);
                     }
                     else
                     {
+                        // Remove if falling didnt happen properly after 5s
+                        if (time == 100)
+                        {
+                            player.getAttribute(Attributes.GRAVITY).removeModifier(AA_GRAVITY_MOD);
+                        }
+
                         flyingPlayers.put(player.getUUID(), ++time);
                     }
                 }
