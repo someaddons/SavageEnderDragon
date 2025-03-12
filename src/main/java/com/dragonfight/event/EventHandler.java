@@ -50,7 +50,7 @@ public class EventHandler
          */
         if (event.getLevel() instanceof ServerLevel && ((ServerLevel) event.getLevel()).dimension() == Level.END && DragonFightManagerCustom.isFightRunning)
         {
-            if (BlockPos.ZERO.distToCenterSqr(event.getX(), 64.0d, event.getZ()) < 300 * 300)
+            if (BlockPos.ZERO.distToCenterSqr(event.getX(), 64.0d, event.getZ()) < 300 * 300 && DragonfightMod.config.getCommonConfig().disableDragonAreaSpawns)
             {
                 event.setSpawnCancelled(true);
             }
