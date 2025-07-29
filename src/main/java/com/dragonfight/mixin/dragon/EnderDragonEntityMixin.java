@@ -1,5 +1,6 @@
 package com.dragonfight.mixin.dragon;
 
+import com.dragonfight.DragonfightMod;
 import com.dragonfight.fight.DragonFightManagerCustom;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
@@ -28,7 +29,7 @@ public class EnderDragonEntityMixin
     @Inject(method = "hurt(Lnet/minecraft/world/entity/boss/EnderDragonPart;Lnet/minecraft/world/damagesource/DamageSource;F)Z", at = @At(value = "HEAD"), cancellable = true)
     private void ignoreBedDamage(final EnderDragonPart p_213403_1_, final DamageSource damageSource, final float p_213403_3_, final CallbackInfoReturnable<Boolean> cir)
     {
-        if (damageSource.is(DamageTypes.BAD_RESPAWN_POINT) || damageSource.getMsgId().contains("explosion"))
+        if (damageSource.is(DamageTypes.BAD_RESPAWN_POINT) || damageSource.getMsgId().contains("explosion") && DragonfightMod.config.getCommonConfig().explosionImmunity)
         {
             cir.setReturnValue(false);
         }

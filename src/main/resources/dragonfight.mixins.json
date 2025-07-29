@@ -7,6 +7,7 @@
     "dragon.DragonDamageMixin",
     "dragon.DragonFireballEntityMixin",
     "dragon.DragonXPMixin",
+    "dragon.EndCrystalItemMixin",
     "dragon.EndDragonFightMixin",
     "dragon.EnderDragonEntityMixin",
     "dragon.LightningBoldSoundMixin",
@@ -17,7 +18,7 @@
   "client": [
   ],
   "injectors": {
-    "defaultRequire": 1
+    "defaultRequire": 0
   },
   "minVersion": "0.8"
 }
