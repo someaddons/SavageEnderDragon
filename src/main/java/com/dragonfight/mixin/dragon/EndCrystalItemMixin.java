@@ -20,7 +20,7 @@ import java.util.List;
 @Mixin(EndCrystalItem.class)
 public class EndCrystalItemMixin
 {
-    @Inject(method = "useOn", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z"), locals = LocalCapture.CAPTURE_FAILEXCEPTION)
+    @Inject(method = "useOn", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z"), locals = LocalCapture.CAPTURE_FAILSOFT)
     private void onAddCrystal(
         final UseOnContext p_41176_,
         final CallbackInfoReturnable<InteractionResult> cir,
