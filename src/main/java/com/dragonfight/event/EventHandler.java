@@ -1,5 +1,6 @@
 package com.dragonfight.event;
 
+import com.dragonfight.DragonfightMod;
 import com.dragonfight.fight.DragonFightManagerCustom;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -25,7 +26,7 @@ public class EventHandler
         /**
          * Disable entity spawn for the dragon fight
          */
-        if (serverLevel.dimension() == Level.END && DragonFightManagerCustom.isFightRunning)
+        if (serverLevel.dimension() == Level.END && DragonFightManagerCustom.isFightRunning && DragonfightMod.config.getCommonConfig().disableDragonAreaSpawns)
         {
             if (BlockPos.ZERO.distToCenterSqr(blockPos.getX(), 64.0d, blockPos.getZ()) < 300 * 300)
             {
