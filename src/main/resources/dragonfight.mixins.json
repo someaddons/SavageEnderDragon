@@ -6,6 +6,7 @@
   "mixins": [
     "dragon.CrystalRespawnMixin",
     "dragon.DragonFireballEntityMixin",
+    "dragon.EndCrystalItemMixin",
     "dragon.EnderDragonEntityMixin",
     "dragon.LightningBoldSoundMixin",
     "dragon.PhaseManagerMixin"

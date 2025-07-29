@@ -47,7 +47,8 @@ public class EventHandler
         /**
          * Disable entity spawn for the dragon fight
          */
-        if (event.getLevel() instanceof ServerLevel && ((ServerLevel) event.getLevel()).dimension() == Level.END && DragonFightManagerCustom.isFightRunning)
+        if (event.getLevel() instanceof ServerLevel && ((ServerLevel) event.getLevel()).dimension() == Level.END && DragonFightManagerCustom.isFightRunning
+            && DragonfightMod.config.getCommonConfig().disableDragonAreaSpawns)
         {
             if (BlockPos.ZERO.distToCenterSqr(event.getX(), 64.0d, event.getZ()) < 300 * 300)
             {
