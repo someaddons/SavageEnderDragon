@@ -23,12 +23,8 @@ public class ConfigurationCache
     private static ImmutableList<EntitySpawnData> parseEntityTypes(final List<String> data)
     {
         final ImmutableList.Builder<EntitySpawnData> builder = ImmutableList.builder();
-        for (final String entry : data)
+        for (final String entityString : data)
         {
-            final String[] splitEntry = entry.split(",");
-            for (final String entityString : splitEntry)
-            {
-                // TODO: Test with example
                 int nbtStart = entityString.indexOf("{");
                 nbtStart = (nbtStart == -1) ? entityString.length() : nbtStart;
                 String typeString = entityString.substring(0, nbtStart);
@@ -63,7 +59,6 @@ public class ConfigurationCache
                 }
 
                 builder.add(new EntitySpawnData(type, nbt));
-            }
         }
 
         return builder.build();

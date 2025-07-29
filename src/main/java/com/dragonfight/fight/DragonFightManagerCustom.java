@@ -4,6 +4,7 @@ import com.cupboard.util.BlockSearch;
 import com.dragonfight.DragonfightMod;
 import com.dragonfight.config.ConfigurationCache;
 import com.google.common.collect.ImmutableList;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -78,6 +79,12 @@ public class DragonFightManagerCustom
 
     public static void onCrystalDeath(final EndCrystal enderCrystalEntity, final DamageSource damageSource)
     {
+        if (enderCrystalEntity.position().distanceTo(new Vec3(0d, 65d, 0d)) < 30 || CrystalLevelData.getForLevel((ServerLevel) enderCrystalEntity.level())
+            .isIgnored(enderCrystalEntity.getUUID()))
+        {
+            return;
+        }
+
         AreaEffectCloud areaeffectcloudentity =
           new AreaEffectCloud(enderCrystalEntity.level(), enderCrystalEntity.getX(), enderCrystalEntity.getY(), enderCrystalEntity.getZ());
 
@@ -285,37 +292,33 @@ public class DragonFightManagerCustom
 
                 if (isFlying(player))
                 {
+                    flyingPlayers.put(player.getUUID(), ++time);
                     if (time == 300)
                     {
-                        player.getAttribute(Attributes.GRAVITY).addTransientModifier(AA_GRAVITY_MOD);
                         flyingPlayers.put(player.getUUID(), ++time);
+                        player.sendSystemMessage(Component.translatable("player.gravity.warn").withStyle(ChatFormatting.DARK_PURPLE));
                     }
-                    else if (time > 400)
+                    else if (time == 400)
                     {
-                        player.hurt(dragonEntity.damageSources().fall(), player.getMaxHealth() * 0.9f);
-                        player.setHealth(1);
-                        player.getAttribute(Attributes.GRAVITY).removeModifier(AA_GRAVITY_MOD);
-                        flyingPlayers.put(player.getUUID(), 0);
-                    }
-                    else
-                    {
-                        // Remove if falling didnt happen properly after 5s
-                        if (time == 100)
-                        {
-                            player.getAttribute(Attributes.GRAVITY).removeModifier(AA_GRAVITY_MOD);
-                        }
-
                         flyingPlayers.put(player.getUUID(), ++time);
+                        player.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 200));
+                        player.sendSystemMessage(Component.translatable("player.gravity.warn").withStyle(ChatFormatting.DARK_PURPLE));
+                    }
+                    else if (time > 700)
+                    {
+                        player.setDeltaMovement(player.getDeltaMovement().add(0, -1, 0));
+                        player.hurtMarked = true;
                     }
                 }
                 else
                 {
-                    if (time > 300)
+                    if (time > 700)
                     {
                         player.hurt(dragonEntity.damageSources().fall(), player.getMaxHealth() * 0.9f);
                         player.setHealth(1);
-                        player.getAttribute(Attributes.GRAVITY).removeModifier(AA_GRAVITY_MOD);
+                        player.sendSystemMessage(Component.translatable("player.gravity.hurt").withStyle(ChatFormatting.RED));
                     }
+
                     flyingPlayers.put(player.getUUID(), 0);
                 }
             }
@@ -388,7 +391,8 @@ public class DragonFightManagerCustom
      */
     private static boolean isFlying(final Player player)
     {
-        return player != null && (player.hasImpulse || !player.onGround()) && player.fallDistance <= 0.1f && player.level().isEmptyBlock(player.blockPosition().below(2));
+        return player != null && (player.hasImpulse || !player.onGround()) && player.level().isEmptyBlock(player.blockPosition().below(2)) && player.level()
+            .isEmptyBlock(player.blockPosition()) && player.level().isEmptyBlock(player.blockPosition().below(1));
     }
 
     /**

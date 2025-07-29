@@ -20,6 +20,7 @@ public class CommonConfiguration implements ICommonConfig
     public double       crystalRespawnTimeModifier = 1.0;
     public double       lightningExplosionDensity  = 1.0;
     public boolean      disableLightning           = false;
+    public boolean explosionImmunity = true;
     public boolean      antiflightAbility          = true;
     public double       dragonHealthModifier       = 1.0;
     public double       dragonDamageModifier       = 1.0;
@@ -60,6 +61,11 @@ public class CommonConfiguration implements ICommonConfig
         entry15.addProperty("desc:", "Enables anti-flight ability: default:true");
         entry15.addProperty("antiflightAbility", antiflightAbility);
         root.add("antiflightAbility", entry15);
+
+        final JsonObject entry22 = new JsonObject();
+        entry22.addProperty("desc:", "Enables explosion damage immunity for the dragon, note that beds are always immune regardless of this setting: default:true");
+        entry22.addProperty("explosionImmunity", explosionImmunity);
+        root.add("explosionImmunity", entry22);
 
         final JsonObject entry16 = new JsonObject();
         entry16.addProperty("desc:", "Sets the dragon health modifier: default:1.0");
@@ -142,6 +148,7 @@ public class CommonConfiguration implements ICommonConfig
         mobSpawnAmountModifier = data.get("mobSpawnAmountModifier").getAsJsonObject().get("mobSpawnAmountModifier").getAsDouble();
         printDragonPhases = data.get("printDragonPhases").getAsJsonObject().get("printDragonPhases").getAsBoolean();
         antiflightAbility = data.get("antiflightAbility").getAsJsonObject().get("antiflightAbility").getAsBoolean();
+        explosionImmunity = data.get("explosionImmunity").getAsJsonObject().get("explosionImmunity").getAsBoolean();
         disableLightning = data.get("disableLightning").getAsJsonObject().get("disableLightning").getAsBoolean();
         disableDragonAreaSpawns = data.get("disableDragonAreaSpawns").getAsJsonObject().get("disableDragonAreaSpawns").getAsBoolean();
         spawnoncrystaldestroy = new ArrayList<>();
