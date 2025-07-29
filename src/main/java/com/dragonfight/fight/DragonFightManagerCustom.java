@@ -72,9 +72,7 @@ public class DragonFightManagerCustom
 
     public static boolean isFightRunning = true;
 
-    final static   ResourceLocation  GRAVITY_MOD_ID = DragonfightMod.id("fall");
     final static   ResourceLocation  HP_MOD_ID      = DragonfightMod.id("dragonhp");
-    public static  AttributeModifier AA_GRAVITY_MOD = new AttributeModifier(GRAVITY_MOD_ID, 5.0, AttributeModifier.Operation.ADD_VALUE);
     private static AttributeModifier MAX_HP_MOD     = new AttributeModifier(HP_MOD_ID, 1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 
     public static void onCrystalDeath(final EndCrystal enderCrystalEntity, final DamageSource damageSource)
@@ -295,18 +293,11 @@ public class DragonFightManagerCustom
                     flyingPlayers.put(player.getUUID(), ++time);
                     if (time == 300)
                     {
-                        player.getAttribute(Attributes.GRAVITY).addTransientModifier(AA_GRAVITY_MOD);
                         flyingPlayers.put(player.getUUID(), ++time);
                         player.sendSystemMessage(Component.translatable("player.gravity.warn").withStyle(ChatFormatting.DARK_PURPLE));
                     }
                     else if (time == 400)
                     {
-                        // Remove if falling didnt happen properly after 5s
-                        if (time == 100)
-                        {
-                            player.getAttribute(Attributes.GRAVITY).removeModifier(AA_GRAVITY_MOD);
-                        }
-
                         flyingPlayers.put(player.getUUID(), ++time);
                         player.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 200));
                         player.sendSystemMessage(Component.translatable("player.gravity.warn").withStyle(ChatFormatting.DARK_PURPLE));
