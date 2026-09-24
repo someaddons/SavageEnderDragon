@@ -21,11 +21,13 @@ import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.enderdragon.phases.DragonDeathPhase;
+import net.minecraft.world.entity.boss.enderdragon.phases.DragonLandingPhase;
 import net.minecraft.world.entity.boss.enderdragon.phases.DragonPhaseInstance;
 import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.npc.Npc;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.DragonFireball;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
 import net.minecraft.world.phys.AABB;
@@ -84,7 +86,7 @@ public class DragonFightManagerCustom
         }
 
         AreaEffectCloud areaeffectcloudentity =
-          new AreaEffectCloud(enderCrystalEntity.level(), enderCrystalEntity.getX(), enderCrystalEntity.getY(), enderCrystalEntity.getZ());
+            new AreaEffectCloud(enderCrystalEntity.level(), enderCrystalEntity.getX(), enderCrystalEntity.getY(), enderCrystalEntity.getZ());
 
         if (dragonEntity != null)
         {
@@ -116,9 +118,9 @@ public class DragonFightManagerCustom
             if (!DragonfightMod.config.getCommonConfig().disableLightning)
             {
                 LightningBolt lightningboltentity =
-                  (LightningBolt) spawnEntity((ServerLevel) enderCrystalEntity.level(),
-                    new ConfigurationCache.EntitySpawnData(EntityType.LIGHTNING_BOLT, null),
-                    damageSource.getEntity().position());
+                    (LightningBolt) spawnEntity((ServerLevel) enderCrystalEntity.level(),
+                        new ConfigurationCache.EntitySpawnData(EntityType.LIGHTNING_BOLT, null),
+                        damageSource.getEntity().position());
                 lightningboltentity.setVisualOnly(false);
             }
 
@@ -128,11 +130,11 @@ public class DragonFightManagerCustom
                 for (int i = 0; i < Math.max(1, (getDifficulty() / 4d) * DragonfightMod.config.getCommonConfig().mobSpawnAmountModifier); i++)
                 {
                     BlockPos searchedPos = BlockSearch.findAround(enderCrystalEntity.level(),
-                      damageSource.getEntity().blockPosition().offset(i + 1, 5, i + 1),
-                      15,
-                      15,
-                      1,
-                      (level, checkPos) -> level.getBlockState(checkPos).isAir() && level.getBlockState(checkPos.above()).isAir());
+                        damageSource.getEntity().blockPosition().offset(i + 1, 5, i + 1),
+                        15,
+                        15,
+                        1,
+                        (level, checkPos) -> level.getBlockState(checkPos).isAir() && level.getBlockState(checkPos.above()).isAir());
 
                     if (searchedPos == null)
                     {
@@ -140,8 +142,8 @@ public class DragonFightManagerCustom
                     }
 
                     final LivingEntity entity = (LivingEntity) spawnEntity((ServerLevel) enderCrystalEntity.level(),
-                      spawnOnCrystalDeath.get(DragonfightMod.rand.nextInt(spawnOnCrystalDeath.size())),
-                      createVec3(searchedPos));
+                        spawnOnCrystalDeath.get(DragonfightMod.rand.nextInt(spawnOnCrystalDeath.size())),
+                        createVec3(searchedPos));
                     if (entity instanceof Mob)
                     {
                         ((Mob) entity).setTarget((LivingEntity) damageSource.getEntity());
@@ -159,12 +161,12 @@ public class DragonFightManagerCustom
                 float f1 = (DragonfightMod.rand.nextFloat() - 0.5F) * 4.0F;
                 float f2 = (DragonfightMod.rand.nextFloat() - 0.5F) * 8.0F;
                 dragonEntity.level().addParticle(ParticleTypes.EXPLOSION_EMITTER,
-                  dragonEntity.getX() + (double) f,
-                  dragonEntity.getY() + 2.0D + (double) f1,
-                  dragonEntity.getZ() + (double) f2,
-                  0.0D,
-                  0.0D,
-                  0.0D);
+                    dragonEntity.getX() + (double) f,
+                    dragonEntity.getY() + 2.0D + (double) f1,
+                    dragonEntity.getZ() + (double) f2,
+                    0.0D,
+                    0.0D,
+                    0.0D);
             }
         }
     }
@@ -214,7 +216,7 @@ public class DragonFightManagerCustom
                 if (crystalRespawnTimer == 200)
                 {
                     // Spawns pre-respawn lightning
-                    spawnLightningAtCircle(crystalRespawnPos, 5, world);
+                    spawnLightningAtCircle(crystalRespawnPos, 6, world);
                 }
             }
             else
@@ -261,7 +263,7 @@ public class DragonFightManagerCustom
         if (dragonEntity.getPhaseManager().getCurrentPhase() instanceof DragonDeathPhase && dragonEntity.getPhaseManager().getCurrentPhase().getFlyTargetLocation() != null)
         {
             if (dragonEntity.getPhaseManager().getCurrentPhase().getFlyTargetLocation().distanceToSqr(dragonEntity.blockPosition().getX(),
-              dragonEntity.blockPosition().getY(), dragonEntity.getZ()) < 10)
+                dragonEntity.blockPosition().getY(), dragonEntity.getZ()) < 10)
             {
                 dragonEntity.setHealth(0);
             }
@@ -284,7 +286,7 @@ public class DragonFightManagerCustom
 
         if (DragonfightMod.config.getCommonConfig().antiflightAbility)
         {
-            for (final Player player : manager.dragonEvent.getPlayers())
+            for (final Player player : getCombatPlayers(manager))
             {
                 int time = flyingPlayers.computeIfAbsent(player.getUUID(), s -> 0);
 
@@ -322,6 +324,28 @@ public class DragonFightManagerCustom
             }
         }
 
+        if (dragonEntity.getPhaseManager().getCurrentPhase() instanceof DragonLandingPhase && world.getGameTime() % 10 == 5
+            && (dragonEntity.getX() + dragonEntity.getZ()) > 15)
+        {
+            Vec3 vec33 = dragonEntity.getViewVector(1.0F);
+            double headX = dragonEntity.head.getX() - vec33.x;
+            double headY = dragonEntity.head.getY(0.5) + 0.5;
+            double headZ = dragonEntity.head.getZ() - vec33.z;
+
+            Vec3 attackTarget = dragonEntity.head.position();
+            attackTarget = attackTarget.add(dragonEntity.getDeltaMovement().normalize().multiply(5, 5, 5));
+            attackTarget = new Vec3(attackTarget.x, world.getHeightmapPos(WORLD_SURFACE, BlockPos.containing(attackTarget)).getY(), attackTarget.z);
+
+            double xDiff = attackTarget.x - headX;
+            double yDiff = attackTarget.y - headY;
+            double zDiff = attackTarget.z - headZ;
+            Vec3 attackMovement = new Vec3(xDiff, yDiff, zDiff);
+            attackMovement = attackMovement.normalize().multiply(2, 2, 2);
+            DragonFireball dragonfireball = new DragonFireball(dragonEntity.level(), dragonEntity, attackMovement.x, attackMovement.y, attackMovement.z);
+            dragonfireball.moveTo(headX, headY, headZ, 0.0F, 0.0F);
+            dragonEntity.level().addFreshEntity(dragonfireball);
+        }
+
         if (advancingLightningCurrent > 0 && world.getGameTime() % 100 == 0)
         {
             advancingLightningCurrent += 3;
@@ -335,7 +359,7 @@ public class DragonFightManagerCustom
         }
 
         if (dragonEntity != null && advancingExplosionCurrent == 0 && advancingLightningCurrent == 0
-              && (dragonEntity.getHealth() / dragonEntity.getMaxHealth()) < (DragonfightMod.config.getCommonConfig().disableLightning ? 0.5d : 0.20d))
+            && (dragonEntity.getHealth() / dragonEntity.getMaxHealth()) < (DragonfightMod.config.getCommonConfig().disableLightning ? 0.5d : 0.20d))
         {
             advancingExplosionCurrent = 8;
             advancingExplosionStop = 50;
@@ -374,10 +398,10 @@ public class DragonFightManagerCustom
         }
 
         MAX_HP_MOD = new AttributeModifier("dragonhp",
-          (Math.max(1, getDifficulty() / 5) * DragonfightMod.config.getCommonConfig().dragonHealthModifier),
-          AttributeModifier.Operation.MULTIPLY_TOTAL);
+            (Math.max(1, getDifficulty() / 5) * DragonfightMod.config.getCommonConfig().dragonHealthModifier),
+            AttributeModifier.Operation.MULTIPLY_TOTAL);
 
-        dragonEntity.getAttribute(Attributes.MAX_HEALTH).addTransientModifier(MAX_HP_MOD);
+        dragonEntity.getAttribute(Attributes.MAX_HEALTH).addPermanentModifier(MAX_HP_MOD);
         dragonEntity.setHealth((float) (dragonEntity.getMaxHealth() * pct));
     }
 
@@ -433,19 +457,19 @@ public class DragonFightManagerCustom
         }
 
         BlockPos searchedPos = BlockSearch.findAround(world,
-          spawnPos,
-          30,
-          30,
-          1,
-          (level, checkPos) -> level.getBlockState(checkPos).isAir() && level.getBlockState(checkPos.above()).isAir() && level.getBlockState(checkPos.below())
-                                                                                                                           .isSolid());
+            spawnPos,
+            30,
+            30,
+            1,
+            (level, checkPos) -> level.getBlockState(checkPos).isAir() && level.getBlockState(checkPos.above()).isAir() && level.getBlockState(checkPos.below())
+                .isSolid());
         if (searchedPos == null)
         {
             searchedPos = spawnPos;
         }
 
         final LivingEntity entity =
-          (LivingEntity) spawnEntity((ServerLevel) world, spawnOnDragonSitting.get(DragonfightMod.rand.nextInt(spawnOnDragonSitting.size())), createVec3(searchedPos));
+            (LivingEntity) spawnEntity((ServerLevel) world, spawnOnDragonSitting.get(DragonfightMod.rand.nextInt(spawnOnDragonSitting.size())), createVec3(searchedPos));
 
         if (entity instanceof Mob)
         {
@@ -489,8 +513,8 @@ public class DragonFightManagerCustom
                 {
                     // Spawn blaze on respawn
                     final Entity entity = spawnEntity((ServerLevel) world,
-                      spawnOnCrystalRespawn.get(DragonfightMod.rand.nextInt(spawnOnCrystalRespawn.size())),
-                      spawnPos.add(0, i, 0));
+                        spawnOnCrystalRespawn.get(DragonfightMod.rand.nextInt(spawnOnCrystalRespawn.size())),
+                        spawnPos.add(0, i, 0));
 
                     if (entity instanceof Mob)
                     {
@@ -532,9 +556,9 @@ public class DragonFightManagerCustom
     }
 
     public static void onPhaseChange(
-      final EnderDragonPhase<?> newPhase,
-      final EnderDragonPhase<? extends DragonPhaseInstance> oldphase,
-      final EnderDragon dragon)
+        final EnderDragonPhase<?> newPhase,
+        final EnderDragonPhase<? extends DragonPhaseInstance> oldphase,
+        final EnderDragon dragon)
     {
         // Avoid doing anything when we're reading a new entity, as nbt read does save the phases
         if (dragonEntity != dragon)
@@ -565,14 +589,14 @@ public class DragonFightManagerCustom
             if ((dragon.getHealth() / dragon.getMaxHealth()) < 0.25d && dragon.getDragonFight() != null)
             {
                 dragon.level().playLocalSound(dragon.getX(),
-                  dragon.getY(),
-                  dragon.getZ(),
-                  SoundEvents.ENDER_DRAGON_GROWL,
-                  dragon.getSoundSource(),
-                  2.5F,
-                  0.8F + DragonfightMod.rand.nextFloat() * 0.3F,
-                  false);
-                for (final Player playerEntity : dragon.getDragonFight().dragonEvent.getPlayers())
+                    dragon.getY(),
+                    dragon.getZ(),
+                    SoundEvents.ENDER_DRAGON_GROWL,
+                    dragon.getSoundSource(),
+                    2.5F,
+                    0.8F + DragonfightMod.rand.nextFloat() * 0.3F,
+                    false);
+                for (final Player playerEntity : getCombatPlayers(manager))
                 {
                     playerEntity.addEffect(new MobEffectInstance(MobEffects.WITHER, 100, getDifficulty() / 3));
                     if ((dragon.getHealth() / dragon.getMaxHealth()) < 0.10d)
@@ -593,7 +617,7 @@ public class DragonFightManagerCustom
             timeSinceLastLanding = 0;
 
             final double healthpercent = (dragon.getHealth() / dragon.getMaxHealth());
-            if (healthpercent < 0.5d)
+            if (healthpercent < 0.6d)
             {
                 advancingLightningCurrent = 6;
                 advancingLightningStop = 50;
@@ -640,22 +664,15 @@ public class DragonFightManagerCustom
             return;
         }
 
-        Set<BlockPos> lightningPositions = getCircularPositionsAround(midPoint, radius, 15 - (radius / 10));
+        Set<BlockPos> lightningPositions = getCircularPositionsAround(midPoint, radius, 15 - (radius / 10), 3.5);
         for (final BlockPos lightningPos : lightningPositions)
         {
             notifyPlayer(world,
-              "spawning plightning at!" + new BlockPos(lightningPos.getX(),
-                world.getHeightmapPos(WORLD_SURFACE, lightningPos).getY(),
-                lightningPos.getZ()));
+                "spawning plightning at!" + new BlockPos(lightningPos.getX(),
+                    world.getHeightmapPos(WORLD_SURFACE, lightningPos).getY(),
+                    lightningPos.getZ()));
 
             final int yLevel = world.getHeightmapPos(WORLD_SURFACE, lightningPos).getY();
-
-            // Dont hit too varied height differences
-            if (Math.abs(midPoint.getY() - yLevel) > 20)
-            {
-                continue;
-            }
-
             LightningBolt lightningboltentity = EntityType.LIGHTNING_BOLT.create(world);
             lightningboltentity.moveTo(lightningPos.getX(), yLevel, lightningPos.getZ());
             lightningboltentity.setVisualOnly(false);
@@ -672,13 +689,13 @@ public class DragonFightManagerCustom
      */
     private static void explodeInCircleAround(final BlockPos midPoint, final int radius, final Level world)
     {
-        Set<BlockPos> explodePos = getCircularPositionsAround(midPoint, radius, 15);
+        Set<BlockPos> explodePos = getCircularPositionsAround(midPoint, radius, 15, 1.5 + getDifficulty() / 4f);
         for (final BlockPos lightningPos : explodePos)
         {
             notifyPlayer(world,
-              "spawning explosion at!" + new BlockPos(lightningPos.getX(),
-                world.getHeightmapPos(WORLD_SURFACE, lightningPos).getY(),
-                lightningPos.getZ()));
+                "spawning explosion at!" + new BlockPos(lightningPos.getX(),
+                    world.getHeightmapPos(WORLD_SURFACE, lightningPos).getY(),
+                    lightningPos.getZ()));
 
             final int yLevel = world.getHeightmapPos(WORLD_SURFACE, lightningPos).getY();
 
@@ -689,25 +706,28 @@ public class DragonFightManagerCustom
             }
 
             world.explode(dragonEntity,
-              lightningPos.getX(),
-              lightningPos.getY(),
-              lightningPos.getZ(),
-              1 + getDifficulty() / 4,
-              false,
-              Level.ExplosionInteraction.NONE);
+                lightningPos.getX(),
+                lightningPos.getY(),
+                lightningPos.getZ(),
+                1 + getDifficulty() / 4f,
+                false,
+                Level.ExplosionInteraction.NONE);
         }
     }
 
-    private static Set<BlockPos> getCircularPositionsAround(final BlockPos start, final int radius, int precision)
+    private static Set<BlockPos> getCircularPositionsAround(final BlockPos start, final int radius, int precision, final double attackAreaRadius)
     {
         Set<BlockPos> positions = new HashSet<>();
 
-        precision = (int) (precision / DragonfightMod.config.getCommonConfig().lightningExplosionDensity);
+        double requestedPrecision = (precision / DragonfightMod.config.getCommonConfig().lightningExplosionDensity);
         final int randomOffset = DragonfightMod.rand.nextInt(40);
-        for (int i = randomOffset; i < 360 + randomOffset; i += precision)
+
+        double minimumPrecision = Math.toDegrees(2.0 * Math.asin(attackAreaRadius / (radius)));
+        double actualPrecision = Math.max(requestedPrecision, minimumPrecision);
+        for (double angle = randomOffset; angle < 360 + randomOffset; angle += actualPrecision)
         {
-            int x = (int) Math.round(radius * Math.cos(Math.toRadians(i)));
-            int z = (int) Math.round(radius * Math.sin(Math.toRadians(i)));
+            int x = (int) Math.round(radius * Math.cos(Math.toRadians(angle)));
+            int z = (int) Math.round(radius * Math.sin(Math.toRadians(angle)));
 
             positions.add(start.offset(x, 0, z));
         }
@@ -744,12 +764,12 @@ public class DragonFightManagerCustom
     {
         int difficulty = DragonfightMod.config.getCommonConfig().dragonDifficulty;
 
-        if (dragonEntity != null)
+        if (dragonEntity != null && dragonEntity.getDragonFight() != null)
         {
             difficulty += dragonEntity.level().getDifficulty().getId();
             if (dragonEntity.getDragonFight() != null)
             {
-                difficulty += dragonEntity.getDragonFight().dragonEvent.getPlayers().size();
+                difficulty += getCombatPlayers(dragonEntity.getDragonFight()).size();
             }
         }
 
@@ -794,5 +814,17 @@ public class DragonFightManagerCustom
         world.addFreshEntity(entity);
 
         return entity;
+    }
+
+    /**
+     * Returns a list of fight-able players
+     *
+     * @return
+     */
+    private static List<Player> getCombatPlayers(EndDragonFight dragonFight)
+    {
+        final List<Player> players = new ArrayList<>(dragonFight.dragonEvent.getPlayers());
+        players.removeIf(player -> player.isSpectator() || player.isCreative());
+        return players;
     }
 }
