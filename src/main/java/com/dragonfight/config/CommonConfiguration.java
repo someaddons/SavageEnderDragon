@@ -26,6 +26,7 @@ public class CommonConfiguration implements ICommonConfig
     public double       dragonDamageModifier       = 1.0;
     public double       mobSpawnAmountModifier     = 1.0;
     public double       dragonXPModifier           = 1.0;
+    public double lightningSoundVolumeModifier = 0.6;
 
     public CommonConfiguration()
     {
@@ -87,6 +88,11 @@ public class CommonConfiguration implements ICommonConfig
         entry20.addProperty("dragonXPModifier", dragonXPModifier);
         root.add("dragonXPModifier", entry20);
 
+        final JsonObject entry21 = new JsonObject();
+        entry21.addProperty("desc:", "Sets the lightning sound modifier as vanilla's sound is very loud, only works on clientside: default:0.6");
+        entry21.addProperty("lightningSoundVolumeModifier", lightningSoundVolumeModifier);
+        root.add("lightningSoundVolumeModifier", entry21);
+
         final JsonObject entry2 = new JsonObject();
         entry2.addProperty("desc:", "Prints the dragon phase in chat if enabled: default:false");
         entry2.addProperty("printDragonPhases", printDragonPhases);
@@ -113,7 +119,7 @@ public class CommonConfiguration implements ICommonConfig
 
         final JsonObject entry5 = new JsonObject();
         entry5.addProperty("desc:",
-          "List of mobs spawning on crystal respawn, intended to be ranged to ward of players from a distance: e.g. format :  [\"minecraft:zombie\", \"minecraft:creeper\"]");
+            "List of mobs spawning on crystal respawn, intended to be ranged to ward off players from a distance: e.g. format :  [\"minecraft:blaze\"]");
         final JsonArray list5 = new JsonArray();
         for (final String name : spawnoncrystalrespawn)
         {
@@ -140,7 +146,7 @@ public class CommonConfiguration implements ICommonConfig
     {
         dragonDifficulty = data.get("dragonDifficulty").getAsJsonObject().get("dragonDifficulty").getAsInt();
         crystalRespawnTimeModifier = data.get("crystalRespawnTimeModifier").getAsJsonObject().get("crystalRespawnTimeModifier").getAsDouble();
-        lightningExplosionDensity = data.get("lightningExplosionDensity").getAsJsonObject().get("lightningExplosionDensity").getAsDouble();
+        lightningExplosionDensity = Math.max(0.01, data.get("lightningExplosionDensity").getAsJsonObject().get("lightningExplosionDensity").getAsDouble());
         dragonHealthModifier = data.get("dragonHealthModifier").getAsJsonObject().get("dragonHealthModifier").getAsDouble();
         dragonDamageModifier = data.get("dragonDamageModifier").getAsJsonObject().get("dragonDamageModifier").getAsDouble();
         dragonXPModifier = data.get("dragonXPModifier").getAsJsonObject().get("dragonXPModifier").getAsDouble();
@@ -167,6 +173,7 @@ public class CommonConfiguration implements ICommonConfig
             spawnwhilelanded.add(element.getAsString());
         }
 
+        lightningSoundVolumeModifier = data.get("lightningSoundVolumeModifier").getAsJsonObject().get("lightningSoundVolumeModifier").getAsDouble();
         ConfigurationCache.onConfigChanged();
     }
 }
