@@ -18,6 +18,9 @@ public class CommonConfiguration implements ICommonConfig
     public List<String> spawnoncrystalrespawn      = Lists.newArrayList("minecraft:blaze");
     public List<String> spawnwhilelanded           = Lists.newArrayList("minecraft:enderman");
     public double       crystalRespawnTimeModifier = 1.0;
+    public boolean doEndCrystalRespawn    = true;
+    public double  crystalMeleeKillDamage = 10.0;
+    public boolean crystalPotionOnDeath   = true;
     public double       lightningExplosionDensity  = 1.0;
     public boolean      disableLightning           = false;
     public boolean explosionImmunity = true;
@@ -47,6 +50,23 @@ public class CommonConfiguration implements ICommonConfig
         entry8.addProperty("desc:", "Modifies crystal respawn time, 0.5 = spawns twice as fast, 2 = twice as slow. default:1.0");
         entry8.addProperty("crystalRespawnTimeModifier", crystalRespawnTimeModifier);
         root.add("crystalRespawnTimeModifier", entry8);
+
+        final JsonObject entry12 = new JsonObject();
+        entry12.addProperty("desc:", "Set whether end crystals respawn at all. default:true");
+        entry12.addProperty("doEndCrystalRespawn", doEndCrystalRespawn);
+        root.add("doEndCrystalRespawn", entry12);
+
+        final JsonObject entry14 = new JsonObject();
+        entry14.addProperty("desc:",
+            "Set the current health percent the dragon looses when an end crystal is killed by a player in close quarters. default:10, 0 to disable, 100 to instant kill the dragon");
+        entry14.addProperty("crystalMeleeKillDamage", crystalMeleeKillDamage);
+        root.add("crystalMeleeKillDamage", entry14);
+
+        final JsonObject entry11 = new JsonObject();
+        entry11.addProperty("desc:",
+            "Enables end crystals to spawn a lingering harmful potion effect around them on death. Duration scales with difficulty and crystal respawn modifier. default:true");
+        entry11.addProperty("crystalPotionOnDeath", crystalPotionOnDeath);
+        root.add("crystalPotionOnDeath", entry11);
 
         final JsonObject entry9 = new JsonObject();
         entry9.addProperty("desc:", "Modifies lightning and explosion density, 0.5 = half as many, 2 = twice as many. default:1.0");
@@ -174,6 +194,9 @@ public class CommonConfiguration implements ICommonConfig
         }
 
         lightningSoundVolumeModifier = data.get("lightningSoundVolumeModifier").getAsJsonObject().get("lightningSoundVolumeModifier").getAsDouble();
+        doEndCrystalRespawn = data.get("doEndCrystalRespawn").getAsJsonObject().get("doEndCrystalRespawn").getAsBoolean();
+        crystalMeleeKillDamage = data.get("crystalMeleeKillDamage").getAsJsonObject().get("crystalMeleeKillDamage").getAsDouble();
+        crystalPotionOnDeath = data.get("crystalPotionOnDeath").getAsJsonObject().get("crystalPotionOnDeath").getAsBoolean();
         ConfigurationCache.onConfigChanged();
     }
 }

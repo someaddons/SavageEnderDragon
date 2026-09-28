@@ -83,24 +83,27 @@ public class DragonFightManagerCustom
             return;
         }
 
-        AreaEffectCloud areaeffectcloudentity =
-            new AreaEffectCloud(enderCrystalEntity.level(), enderCrystalEntity.getX(), enderCrystalEntity.getY(), enderCrystalEntity.getZ());
-
-        if (dragonEntity != null)
+        if (DragonfightMod.config.getCommonConfig().crystalPotionOnDeath)
         {
-            areaeffectcloudentity.setOwner(dragonEntity);
-        }
+            AreaEffectCloud areaeffectcloudentity =
+                new AreaEffectCloud(enderCrystalEntity.level(), enderCrystalEntity.getX(), enderCrystalEntity.getY(), enderCrystalEntity.getZ());
 
-        notifyPlayer(enderCrystalEntity.level(), "Crystal died from:" + damageSource);
-        // Spawn ground area effect making the player walk away
-        areaeffectcloudentity.setParticle(ParticleTypes.DRAGON_BREATH);
-        areaeffectcloudentity.setRadius(1.0F);
-        areaeffectcloudentity.setDuration((int) ((CRYSTAL_RESPAWN_TIME / getDifficulty()) * DragonfightMod.config.getCommonConfig().crystalRespawnTimeModifier));
-        areaeffectcloudentity.setRadiusPerTick((5.0F - areaeffectcloudentity.getRadius()) / (float) areaeffectcloudentity.getDuration());
-        areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.HARM, 100, 1));
-        areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 100, 1));
-        areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
-        enderCrystalEntity.level().addFreshEntity(areaeffectcloudentity);
+            if (dragonEntity != null)
+            {
+                areaeffectcloudentity.setOwner(dragonEntity);
+            }
+
+            notifyPlayer(enderCrystalEntity.level(), "Crystal died from:" + damageSource);
+            // Spawn ground area effect making the player walk away
+            areaeffectcloudentity.setParticle(ParticleTypes.DRAGON_BREATH);
+            areaeffectcloudentity.setRadius(1.0F);
+            areaeffectcloudentity.setDuration((int) ((CRYSTAL_RESPAWN_TIME / getDifficulty()) * DragonfightMod.config.getCommonConfig().crystalRespawnTimeModifier));
+            areaeffectcloudentity.setRadiusPerTick((5.0F - areaeffectcloudentity.getRadius()) / (float) areaeffectcloudentity.getDuration());
+            areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.HARM, 100, 1));
+            areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 100, 1));
+            areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
+            enderCrystalEntity.level().addFreshEntity(areaeffectcloudentity);
+        }
 
         addCrystalRespawnPos(enderCrystalEntity.blockPosition());
 
@@ -154,7 +157,8 @@ public class DragonFightManagerCustom
             // Melee kill reduces dragon HP
             if (dragonEntity != null && dragonEntity.getHealth() > 100)
             {
-                dragonEntity.setHealth(dragonEntity.getHealth() * 0.9f);
+                final float percent = (float) (1.0f - (DragonfightMod.config.getCommonConfig().crystalMeleeKillDamage / 100.0f));
+                dragonEntity.setHealth(dragonEntity.getHealth() * percent);
                 float f = (DragonfightMod.rand.nextFloat() - 0.5F) * 8.0F;
                 float f1 = (DragonfightMod.rand.nextFloat() - 0.5F) * 4.0F;
                 float f2 = (DragonfightMod.rand.nextFloat() - 0.5F) * 8.0F;
@@ -630,7 +634,7 @@ public class DragonFightManagerCustom
 
     private static void checkCrystalsToRespawn(final Level world)
     {
-        if (crystalRespawnPos != null)
+        if (crystalRespawnPos != null || !DragonfightMod.config.getCommonConfig().doEndCrystalRespawn)
         {
             return;
         }
