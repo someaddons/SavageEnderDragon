@@ -5,19 +5,14 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.sounds.SoundEngine;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(value = SoundEngine.class, priority = 100)
 public abstract class SoundEngineMixin
 {
-    @Shadow
-    protected abstract float calculateVolume(final float p_235258_, final SoundSource p_235259_);
-
     /**
      * Fix https://bugs.mojang.com/browse/MC?fixVersion=Minecraft%2014w26a until 1.21.9
      *
