@@ -230,6 +230,11 @@ public class DragonFightManagerCustom
             }
         }
 
+        if (dragonEntity.isAlive() && dragonEntity.getHealth() == dragonEntity.getMaxHealth())
+        {
+            setDragonHealth();
+        }
+
         if (dragonEntity.getHealth() < dragonEntity.getMaxHealth() && dragonEntity.isAlive())
         {
             if (!isFightRunning && !manager.dragonEvent.getPlayers().isEmpty())
@@ -545,7 +550,8 @@ public class DragonFightManagerCustom
      */
     public static void onDragonHeal(final EnderDragon dragonEntity)
     {
-        dragonEntity.setHealth(Math.min(dragonEntity.getMaxHealth(), dragonEntity.getHealth() + (getDifficulty() / 7f)));
+        dragonEntity.setHealth(Math.min(dragonEntity.getMaxHealth(),
+            dragonEntity.getHealth() + (getDifficulty() / 7f) * (float) DragonfightMod.config.getCommonConfig().dragonHealModifier));
     }
 
     /**
