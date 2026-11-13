@@ -37,7 +37,8 @@ public class EventHandler
         {
             final float pct = ((EnderDragon) event.getEntity()).getHealth() / ((EnderDragon) event.getEntity()).getMaxHealth();
             ((EnderDragon) event.getEntity()).getAttribute(Attributes.MAX_HEALTH)
-              .setBaseValue(Math.max(400 + 50 * DragonfightMod.config.getCommonConfig().dragonDifficulty, ((EnderDragon) event.getEntity()).getMaxHealth()));
+                .setBaseValue(Math.max(400 + 50 * DragonfightMod.config.getCommonConfig().dragonDifficulty,
+                    ((EnderDragon) event.getEntity()).getAttribute(Attributes.MAX_HEALTH).getBaseValue()));
             ((EnderDragon) event.getEntity()).setHealth(((EnderDragon) event.getEntity()).getMaxHealth() * pct);
         }
     }

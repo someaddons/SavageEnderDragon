@@ -124,6 +124,19 @@ publishing {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
+def uploaderHome = System.getenv('CFUPLOAD_HOME') ?:
+        new File(System.getProperty('user.home'), '.cfupload').path
+def uploaderScript = new File(uploaderHome, 'gradle.gradle')
+if (uploaderScript.isFile()) {
+    apply from: uploaderScript
+}
+curseForgeUploader.putAll([
+        minecraftVersions: ['1.21.1'],
+        loaders          : ['NeoForge'],
+        client           : true,
+        server           : true,
+])
+
 
 // IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.
 idea {
