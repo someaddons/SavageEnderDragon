@@ -26,6 +26,7 @@ public class CommonConfiguration implements ICommonConfig
     public boolean explosionImmunity = true;
     public boolean      antiflightAbility          = true;
     public double       dragonHealthModifier       = 1.0;
+    public double dragonHealModifier = 1.0;
     public double       dragonDamageModifier       = 1.0;
     public double       mobSpawnAmountModifier     = 1.0;
     public double       dragonXPModifier           = 1.0;
@@ -107,6 +108,11 @@ public class CommonConfiguration implements ICommonConfig
         entry20.addProperty("desc:", "Sets the XP drop modifier: default:1.0");
         entry20.addProperty("dragonXPModifier", dragonXPModifier);
         root.add("dragonXPModifier", entry20);
+
+        final JsonObject entry23 = new JsonObject();
+        entry23.addProperty("desc:", "Sets the modifier on the dragon's healing received from existing end crystals: default:1.0");
+        entry23.addProperty("dragonHealModifier", dragonHealModifier);
+        root.add("dragonHealModifier", entry23);
 
         final JsonObject entry21 = new JsonObject();
         entry21.addProperty("desc:", "Sets the lightning sound modifier as vanilla's sound is very loud, only works on clientside: default:0.6");
@@ -197,6 +203,7 @@ public class CommonConfiguration implements ICommonConfig
         doEndCrystalRespawn = data.get("doEndCrystalRespawn").getAsJsonObject().get("doEndCrystalRespawn").getAsBoolean();
         crystalMeleeKillDamage = data.get("crystalMeleeKillDamage").getAsJsonObject().get("crystalMeleeKillDamage").getAsDouble();
         crystalPotionOnDeath = data.get("crystalPotionOnDeath").getAsJsonObject().get("crystalPotionOnDeath").getAsBoolean();
+        dragonHealModifier = data.get("dragonHealModifier").getAsJsonObject().get("dragonHealModifier").getAsDouble();
         ConfigurationCache.onConfigChanged();
     }
 }
