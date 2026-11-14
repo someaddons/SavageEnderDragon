@@ -10,7 +10,7 @@ buildscript {
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.141'
+    id 'net.neoforged.moddev' version '2.0.147'
     id 'idea'
 }
 
@@ -280,7 +280,7 @@ if (uploaderScript.isFile()) {
 }
 
 curseForgeUploader.putAll([
-        minecraftVersions: ['26.1', '26.1.1', '26.1.2'],
+        minecraftVersions: ['26.2'],
         loaders          : ['NeoForge'],
         client           : true,
         server           : true,

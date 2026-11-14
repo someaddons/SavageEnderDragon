@@ -126,7 +126,7 @@ public class DragonFightManagerCustom
             {
                 LightningBolt lightningboltentity =
                     (LightningBolt) spawnEntity((ServerLevel) enderCrystalEntity.level(),
-                        new ConfigurationCache.EntitySpawnData(BuiltInRegistries.ENTITY_TYPE.wrapAsHolder(EntityType.LIGHTNING_BOLT), null),
+                        new ConfigurationCache.EntitySpawnData(BuiltInRegistries.ENTITY_TYPE.wrapAsHolder(EntityTypes.LIGHTNING_BOLT), null),
                         damageSource.getEntity().position());
                 lightningboltentity.setVisualOnly(false);
             }
@@ -521,7 +521,7 @@ public class DragonFightManagerCustom
         {
             // Respawn crystal
             final EndCrystal crystal = (EndCrystal) spawnEntity((ServerLevel) world,
-                new ConfigurationCache.EntitySpawnData(BuiltInRegistries.ENTITY_TYPE.wrapAsHolder(EntityType.END_CRYSTAL), null),
+                new ConfigurationCache.EntitySpawnData(BuiltInRegistries.ENTITY_TYPE.wrapAsHolder(EntityTypes.END_CRYSTAL), null),
                 createVec3(pos));
             final Vec3 spawnPos = createVec3(new BlockPos((int) (pos.getX() * 0.8), pos.getY(), (int) (pos.getZ() * 0.8)));
 
@@ -692,7 +692,7 @@ public class DragonFightManagerCustom
                     lightningPos.getZ()));
 
             final int yLevel = world.getHeightmapPos(WORLD_SURFACE, lightningPos).getY();
-            LightningBolt lightningboltentity = new LightningBolt(EntityType.LIGHTNING_BOLT, world);
+            LightningBolt lightningboltentity = new LightningBolt(EntityTypes.LIGHTNING_BOLT, world);
             lightningboltentity.setPos(lightningPos.getX(), yLevel, lightningPos.getZ());
             lightningboltentity.setVisualOnly(false);
             world.addFreshEntity(lightningboltentity);
@@ -810,7 +810,7 @@ public class DragonFightManagerCustom
         }
 
         compoundtag.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(spawnData.type.value()).toString());
-        Entity entity = EntityType.loadEntityRecursive(compoundtag, world, EntitySpawnReason.MOB_SUMMONED, (p_138828_) -> {
+        Entity entity = EntityType.loadEntityRecursive(spawnData.type.value(), compoundtag, world, EntitySpawnReason.MOB_SUMMONED, (p_138828_) -> {
 
             final double offset = pos.x % 1d != 0d || pos.z % 1d != 0d ? 0 : 0.5;
 

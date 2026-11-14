@@ -22,16 +22,17 @@ public class EndCrystalItemMixin
 {
     @Inject(method = "useOn", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;addFreshEntity(Lnet/minecraft/world/entity/Entity;)Z"), locals = LocalCapture.CAPTURE_FAILSOFT)
     private void onAddCrystal(
-        final UseOnContext p_41176_,
+        final UseOnContext context,
         final CallbackInfoReturnable<InteractionResult> cir,
         final Level level,
-        final BlockPos blockpos,
-        final BlockState blockstate,
-        final BlockPos blockpos1,
-        final double d0,
-        final double d1,
-        final double d2,
-        final List list,
+        final BlockPos pos,
+        final BlockState blockState,
+        final BlockPos above,
+        final double x,
+        final double y,
+        final double z,
+        final List entities,
+        final ServerLevel serverLevel,
         final EndCrystal endcrystal)
     {
         if (endcrystal != null)
