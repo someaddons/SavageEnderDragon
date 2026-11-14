@@ -280,7 +280,7 @@ if (uploaderScript.isFile()) {
 }
 
 curseForgeUploader.putAll([
-        minecraftVersions: ['26.2'],
+        minecraftVersions: ['26.3'],
         loaders          : ['NeoForge'],
         client           : true,
         server           : true,

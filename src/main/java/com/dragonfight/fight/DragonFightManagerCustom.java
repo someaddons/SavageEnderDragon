@@ -320,7 +320,7 @@ public class DragonFightManagerCustom
                     else if (time > 700)
                     {
                         player.setDeltaMovement(player.getDeltaMovement().add(0, -1, 0));
-                        player.hurtMarked = true;
+                        player.needsSync = true;
                     }
                 }
                 else
