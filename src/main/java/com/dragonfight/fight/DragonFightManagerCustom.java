@@ -7,11 +7,13 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.PowerParticleOption;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -29,9 +31,9 @@ import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.npc.Npc;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.DragonFireball;
+import net.minecraft.world.entity.projectile.hurtingprojectile.DragonFireball;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.dimension.end.EndDragonFight;
+import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -74,8 +76,8 @@ public class DragonFightManagerCustom
 
     public static boolean isFightRunning = true;
 
-    final static   ResourceLocation  GRAVITY_MOD_ID = DragonfightMod.id("fall");
-    final static   ResourceLocation  HP_MOD_ID      = DragonfightMod.id("dragonhp");
+    final static Identifier GRAVITY_MOD_ID = DragonfightMod.id("fall");
+    final static Identifier HP_MOD_ID      = DragonfightMod.id("dragonhp");
     public static  AttributeModifier AA_GRAVITY_MOD = new AttributeModifier(GRAVITY_MOD_ID, 5.0, AttributeModifier.Operation.ADD_VALUE);
     private static AttributeModifier MAX_HP_MOD     = new AttributeModifier(HP_MOD_ID, 1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 
@@ -99,13 +101,13 @@ public class DragonFightManagerCustom
 
             notifyPlayer(enderCrystalEntity.level(), "Crystal died from:" + damageSource);
             // Spawn ground area effect making the player walk away
-            areaeffectcloudentity.setParticle(ParticleTypes.DRAGON_BREATH);
+            areaeffectcloudentity.setCustomParticle(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1.0F));
             areaeffectcloudentity.setRadius(1.0F);
             areaeffectcloudentity.setDuration((int) ((CRYSTAL_RESPAWN_TIME / getDifficulty()) * DragonfightMod.config.getCommonConfig().crystalRespawnTimeModifier));
             areaeffectcloudentity.setRadiusPerTick((5.0F - areaeffectcloudentity.getRadius()) / (float) areaeffectcloudentity.getDuration());
-            areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.HARM, 100, 1));
+            areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.INSTANT_DAMAGE, 100, 1));
             areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 100, 1));
-            areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
+            areaeffectcloudentity.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100, 1));
             enderCrystalEntity.level().addFreshEntity(areaeffectcloudentity);
         }
 
@@ -124,7 +126,7 @@ public class DragonFightManagerCustom
             {
                 LightningBolt lightningboltentity =
                     (LightningBolt) spawnEntity((ServerLevel) enderCrystalEntity.level(),
-                        new ConfigurationCache.EntitySpawnData(EntityType.LIGHTNING_BOLT, null),
+                        new ConfigurationCache.EntitySpawnData(BuiltInRegistries.ENTITY_TYPE.wrapAsHolder(EntityType.LIGHTNING_BOLT), null),
                         damageSource.getEntity().position());
                 lightningboltentity.setVisualOnly(false);
             }
@@ -208,7 +210,7 @@ public class DragonFightManagerCustom
 
     public static void onWorldTick(final Level world)
     {
-        final EndDragonFight manager = ((ServerLevel) world).getDragonFight();
+        final EnderDragonFight manager = ((ServerLevel) world).getDragonFight();
         if (manager == null || manager.dragonEvent.getPlayers().isEmpty() || dragonEntity == null)
         {
             reset();
@@ -353,7 +355,7 @@ public class DragonFightManagerCustom
             Vec3 attackMovement = new Vec3(xDiff, yDiff, zDiff);
 
             DragonFireball dragonfireball = new DragonFireball(dragonEntity.level(), dragonEntity, attackMovement.normalize().multiply(2, 2, 2));
-            dragonfireball.moveTo(headX, headY, headZ, 0.0F, 0.0F);
+            dragonfireball.setPos(headX, headY, headZ);
             dragonEntity.level().addFreshEntity(dragonfireball);
         }
 
@@ -424,7 +426,7 @@ public class DragonFightManagerCustom
      */
     private static boolean isFlying(final Player player)
     {
-        return player != null && (player.hasImpulse || !player.onGround()) && player.level().isEmptyBlock(player.blockPosition().below(2)) && player.level()
+        return player != null && !player.onGround() && player.level().isEmptyBlock(player.blockPosition().below(2)) && player.level()
             .isEmptyBlock(player.blockPosition()) && player.level().isEmptyBlock(player.blockPosition().below(1));
     }
 
@@ -487,7 +489,7 @@ public class DragonFightManagerCustom
 
         if (entity instanceof Mob)
         {
-            final List<Player> closesPlayers = world.getNearbyPlayers(TargetingConditions.DEFAULT, entity, entity.getBoundingBox().inflate(20));
+            final List<Player> closesPlayers = ((ServerLevel) world).getNearbyPlayers(TargetingConditions.DEFAULT, entity, entity.getBoundingBox().inflate(20));
             if (!closesPlayers.isEmpty())
             {
                 final Player closestPlayer = closesPlayers.get(DragonfightMod.rand.nextInt(closesPlayers.size()));
@@ -496,7 +498,7 @@ public class DragonFightManagerCustom
         }
         else
         {
-            final List<Player> farPlayers = world.getNearbyPlayers(TargetingConditions.DEFAULT, entity, entity.getBoundingBox().inflate(60, 120, 60));
+            final List<Player> farPlayers = ((ServerLevel) world).getNearbyPlayers(TargetingConditions.DEFAULT, entity, entity.getBoundingBox().inflate(60, 120, 60));
             if (!farPlayers.isEmpty())
             {
                 final Player closestPlayer = farPlayers.get(DragonfightMod.rand.nextInt(farPlayers.size()));
@@ -518,7 +520,9 @@ public class DragonFightManagerCustom
         if (world.getEntitiesOfClass(EndCrystal.class, new AABB(pos).inflate(2)).isEmpty())
         {
             // Respawn crystal
-            final EndCrystal crystal = (EndCrystal) spawnEntity((ServerLevel) world, new ConfigurationCache.EntitySpawnData(EntityType.END_CRYSTAL, null), createVec3(pos));
+            final EndCrystal crystal = (EndCrystal) spawnEntity((ServerLevel) world,
+                new ConfigurationCache.EntitySpawnData(BuiltInRegistries.ENTITY_TYPE.wrapAsHolder(EntityType.END_CRYSTAL), null),
+                createVec3(pos));
             final Vec3 spawnPos = createVec3(new BlockPos((int) (pos.getX() * 0.8), pos.getY(), (int) (pos.getZ() * 0.8)));
 
             if (!spawnOnCrystalRespawn.isEmpty())
@@ -587,7 +591,7 @@ public class DragonFightManagerCustom
             return;
         }
 
-        final EndDragonFight manager = ((ServerLevel) dragon.level()).getDragonFight();
+        final EnderDragonFight manager = ((ServerLevel) dragon.level()).getDragonFight();
         if (manager == null || manager.dragonEvent.getPlayers().isEmpty())
         {
             return;
@@ -688,8 +692,8 @@ public class DragonFightManagerCustom
                     lightningPos.getZ()));
 
             final int yLevel = world.getHeightmapPos(WORLD_SURFACE, lightningPos).getY();
-            LightningBolt lightningboltentity = EntityType.LIGHTNING_BOLT.create(world);
-            lightningboltentity.moveTo(lightningPos.getX(), yLevel, lightningPos.getZ());
+            LightningBolt lightningboltentity = new LightningBolt(EntityType.LIGHTNING_BOLT, world);
+            lightningboltentity.setPos(lightningPos.getX(), yLevel, lightningPos.getZ());
             lightningboltentity.setVisualOnly(false);
             world.addFreshEntity(lightningboltentity);
         }
@@ -762,7 +766,7 @@ public class DragonFightManagerCustom
         {
             for (final Player player : ((ServerLevel) world).players())
             {
-                if (world.getServer() != null && ((ServerLevel) world).getServer().getProfilePermissions(player.getGameProfile()) > 0)
+                if (world.getServer() != null && ((ServerLevel) world).getServer().getProfilePermissions(player.nameAndId()).hasPermission(Permissions.COMMANDS_GAMEMASTER))
                 {
                     player.sendSystemMessage(Component.literal(message));
                 }
@@ -805,12 +809,12 @@ public class DragonFightManagerCustom
             compoundtag = spawnData.nbt.copy();
         }
 
-        compoundtag.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(spawnData.type).toString());
-        Entity entity = EntityType.loadEntityRecursive(compoundtag, world, (p_138828_) -> {
+        compoundtag.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(spawnData.type.value()).toString());
+        Entity entity = EntityType.loadEntityRecursive(compoundtag, world, EntitySpawnReason.MOB_SUMMONED, (p_138828_) -> {
 
             final double offset = pos.x % 1d != 0d || pos.z % 1d != 0d ? 0 : 0.5;
 
-            p_138828_.moveTo(pos.x + offset, pos.y, pos.z + offset, p_138828_.getYRot(), p_138828_.getXRot());
+            p_138828_.setPos(pos.x + offset, pos.y, pos.z + offset);
             return p_138828_;
         });
 
@@ -823,7 +827,7 @@ public class DragonFightManagerCustom
 
         if (entity instanceof Mob)
         {
-            ((Mob) entity).finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.COMMAND, (SpawnGroupData) null);
+            ((Mob) entity).finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), EntitySpawnReason.MOB_SUMMONED, (SpawnGroupData) null);
         }
 
         world.addFreshEntity(entity);
@@ -836,7 +840,7 @@ public class DragonFightManagerCustom
      *
      * @return
      */
-    private static List<Player> getCombatPlayers(EndDragonFight dragonFight)
+    private static List<Player> getCombatPlayers(EnderDragonFight dragonFight)
     {
         final List<Player> players = new ArrayList<>(dragonFight.dragonEvent.getPlayers());
         players.removeIf(player -> player.isSpectator() || player.isCreative());

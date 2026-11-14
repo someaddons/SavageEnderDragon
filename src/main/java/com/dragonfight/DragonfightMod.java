@@ -3,7 +3,7 @@ package com.dragonfight;
 import com.cupboard.config.CupboardConfig;
 import com.dragonfight.config.CommonConfiguration;
 import com.dragonfight.event.EventHandler;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -36,8 +36,8 @@ public class DragonfightMod
         LOGGER.info(MODID + " mod initialized");
     }
 
-    public static ResourceLocation id(final String id)
+    public static Identifier id(final String id)
     {
-        return ResourceLocation.fromNamespaceAndPath(MODID, id);
+        return Identifier.fromNamespaceAndPath(MODID, id);
     }
 }

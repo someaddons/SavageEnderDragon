@@ -3,13 +3,15 @@ package com.dragonfight.config;
 import com.dragonfight.DragonfightMod;
 import com.dragonfight.fight.DragonFightManagerCustom;
 import com.google.common.collect.ImmutableList;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 
 import java.util.List;
+import java.util.Optional;
 
 public class ConfigurationCache
 {
@@ -30,15 +32,15 @@ public class ConfigurationCache
                 String typeString = entityString.substring(0, nbtStart);
                 String nbtString = entityString.substring(nbtStart);
 
-                final ResourceLocation id = ResourceLocation.tryParse(typeString);
+            final Identifier id = Identifier.tryParse(typeString);
                 if (id == null)
                 {
                     DragonfightMod.LOGGER.error("Config entry could not be parsed, not a valid resource location " + entityString);
                     continue;
                 }
 
-                final EntityType type = BuiltInRegistries.ENTITY_TYPE.get(id);
-                if (type.equals(BuiltInRegistries.ENTITY_TYPE.get((BuiltInRegistries.ENTITY_TYPE.getDefaultKey()))))
+            final Optional<Holder.Reference<EntityType<?>>> type = BuiltInRegistries.ENTITY_TYPE.get(id);
+            if (type.isEmpty() || type.equals(BuiltInRegistries.ENTITY_TYPE.get((BuiltInRegistries.ENTITY_TYPE.getDefaultKey()))))
                 {
                     DragonfightMod.LOGGER.error("Config entry could not be parsed, not a valid entity type" + entityString);
                     continue;
@@ -50,7 +52,7 @@ public class ConfigurationCache
                 {
                     try
                     {
-                        nbt = TagParser.parseTag(nbtString);
+                        nbt = TagParser.parseCompoundFully(nbtString);
                     }
                     catch (Exception e)
                     {
@@ -58,7 +60,7 @@ public class ConfigurationCache
                     }
                 }
 
-                builder.add(new EntitySpawnData(type, nbt));
+            builder.add(new EntitySpawnData(type.get(), nbt));
         }
 
         return builder.build();
@@ -66,10 +68,10 @@ public class ConfigurationCache
 
     public static class EntitySpawnData
     {
-        public final EntityType  type;
+        public final Holder<EntityType<?>> type;
         public final CompoundTag nbt;
 
-        public EntitySpawnData(final EntityType type, final CompoundTag nbt)
+        public EntitySpawnData(final Holder<EntityType<?>> type, final CompoundTag nbt)
         {
             this.type = type;
             this.nbt = nbt;

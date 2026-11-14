@@ -24,7 +24,7 @@ public class EventHandler
     @SubscribeEvent
     public static void onWorldTick(final LevelTickEvent.Post event)
     {
-        if (!event.getLevel().isClientSide && event.getLevel().dimension() == Level.END)
+        if (!event.getLevel().isClientSide() && event.getLevel().dimension() == Level.END)
         {
             DragonFightManagerCustom.onWorldTick(event.getLevel());
         }

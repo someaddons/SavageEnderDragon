@@ -5,26 +5,12 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.sounds.SoundEngine;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Mth;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(value = SoundEngine.class, priority = 100)
 public abstract class SoundEngineMixin
 {
-    /**
-     * Fix https://bugs.mojang.com/browse/MC?fixVersion=Minecraft%2014w26a until 1.21.9
-     *
-     * @param volume
-     * @return
-     */
-    @ModifyVariable(method = "calculateVolume(FLnet/minecraft/sounds/SoundSource;)F", at = @At("HEAD"), argsOnly = true)
-    private float adjustVolume(float volume)
-    {
-        return Mth.clamp(volume, 0.0F, 1.0F);
-    }
-
     @ModifyExpressionValue(
         method = "play",
         at = @At(
@@ -34,7 +20,7 @@ public abstract class SoundEngineMixin
     )
     private float dragonfight$reduceThunderVolume(float volume, SoundInstance sound)
     {
-        if (sound.getLocation().equals(SoundEvents.LIGHTNING_BOLT_THUNDER.getLocation()) || sound.getLocation().equals(SoundEvents.LIGHTNING_BOLT_IMPACT.getLocation()))
+        if (sound.getIdentifier().equals(SoundEvents.LIGHTNING_BOLT_THUNDER.location()) || sound.getIdentifier().equals(SoundEvents.LIGHTNING_BOLT_IMPACT.location()))
         {
             return (float) (volume * DragonfightMod.config.getCommonConfig().lightningSoundVolumeModifier);
         }

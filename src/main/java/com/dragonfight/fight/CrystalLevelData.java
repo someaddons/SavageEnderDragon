@@ -1,13 +1,15 @@
 package com.dragonfight.fight;
 
+import com.dragonfight.DragonfightMod;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -15,7 +17,10 @@ import java.util.UUID;
 
 public class CrystalLevelData extends SavedData
 {
-    public static final String ID = "dragonfight";
+    public static final SavedDataType<CrystalLevelData> TYPE = new SavedDataType<>(Identifier.fromNamespaceAndPath(DragonfightMod.MODID, "dragonfight"),
+        CrystalLevelData::new,
+        CompoundTag.CODEC.xmap(CrystalLevelData::load, CrystalLevelData::save),
+        DataFixTypes.LEVEL);
 
     private Set<BlockPos> crystalPendingRespawns = new HashSet<>();
     private Set<UUID>     toIgnore               = new HashSet<>();
@@ -34,33 +39,33 @@ public class CrystalLevelData extends SavedData
 
     public void read(CompoundTag nbt)
     {
-        ListTag list = nbt.getList("positions", Tag.TAG_COMPOUND);
+        ListTag list = nbt.getList("positions").get();
         crystalPendingRespawns.clear();
         for (final Tag tag : list)
         {
             if (tag instanceof CompoundTag)
             {
-                crystalPendingRespawns.add(new BlockPos(((CompoundTag) tag).getInt("x"), ((CompoundTag) tag).getInt("y"), ((CompoundTag) tag).getInt("z")));
+                crystalPendingRespawns.add(new BlockPos(((CompoundTag) tag).getInt("x").get(), ((CompoundTag) tag).getInt("y").get(), ((CompoundTag) tag).getInt("z").get()));
             }
         }
 
         if (nbt.contains("uuids"))
         {
-            ListTag uuids = nbt.getList("uuids", Tag.TAG_COMPOUND);
+            ListTag uuids = nbt.getList("uuids").get();
             toIgnore.clear();
             for (final Tag tag : uuids)
-            {
                 if (tag instanceof CompoundTag)
                 {
-                    toIgnore.add(((CompoundTag) tag).getUUID("uuid"));
+                    toIgnore.add(UUID.fromString(((CompoundTag) tag).getString("uuid").get()));
+                    {
                 }
             }
         }
     }
 
-    @Override
-    public CompoundTag save(CompoundTag nbt, HolderLookup.Provider provider)
+    public CompoundTag save()
     {
+        CompoundTag nbt = new CompoundTag();
         ListTag list = new ListTag();
         for (final BlockPos data : crystalPendingRespawns)
         {
@@ -77,7 +82,7 @@ public class CrystalLevelData extends SavedData
         for (final UUID uuid : toIgnore)
         {
             CompoundTag tag = new CompoundTag();
-            tag.putUUID("uuid", uuid);
+            tag.putString("uuid", uuid.toString());
             uuidList.add(tag);
         }
 
@@ -122,6 +127,6 @@ public class CrystalLevelData extends SavedData
 
     public static CrystalLevelData getForLevel(final ServerLevel level)
     {
-        return level.getDataStorage().computeIfAbsent(new Factory<>(CrystalLevelData::new, (nbt, provider) -> load(nbt), DataFixTypes.LEVEL), CrystalLevelData.ID);
+        return level.getDataStorage().computeIfAbsent(TYPE);
     }
 }
